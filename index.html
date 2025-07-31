@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beelyt - Habit Tracker</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+  <link rel="icon" href="/icons/icon-192x192.png">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="app" class="p-4 min-h-screen bg-gray-100">
+    <div class="max-w-md mx-auto">
+      <h1 class="text-2xl font-bold mb-4">Beelyt - Habits</h1>
+      <div v-if="habits.length === 0" class="text-center text-gray-500 mb-6">
+        Add habit to track
+      </div>
+      <div v-for="habit in habits" :key="habit.id" class="bg-white p-3 rounded-lg shadow-md mb-3 flex items-center">
+        <div class="flex-1">
+          <h3
+            class="text-lg font-semibold cursor-pointer text-blue-600 hover:underline truncate overflow-hidden"
+            style="max-width: 140px;"
+            @click="openHabitDetail(habit)"
+            :title="habit.name"
+          >
+            {{ habit.name }}
+          </h3>
+        </div>
+        <div>
+          <!-- Weekday header row -->
+          <div class="grid grid-cols-7 gap-1 mb-1">
+            <div v-for="day in last7Days" :key="'header-' + day" class="text-xs text-center text-gray-500 font-medium">
+              {{ new Date(day + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }) }}
+            </div>
+          </div>
+          <!-- Day numbers row -->
+          <div class="grid grid-cols-7 gap-1 ml-0">
+            <div v-for="day in last7Days" :key="day"
+                 class="w-8 h-8 flex items-center justify-center text-sm border rounded"
+                 :class="{
+                   'bg-green-500 text-white font-bold': isHabitCompleted(habit, day),
+                   'bg-gray-200': !isHabitCompleted(habit, day)
+                 }"
+                 @click="toggleComplete(habit, day)">
+              {{ new Date(day + 'T00:00:00').getDate() }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Habit Detail Modal -->
+      <div v-if="showHabitDetail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-4 rounded-lg w-11/12 max-w-md relative">
+          <!-- Modal Header: Habit name, Delete, Close -->
+          <div class="habit-modal-header flex items-center mb-4" style="height: 48px;">
+            <input
+              v-model="renameInput"
+              @blur="confirmRename"
+              @keyup.enter="confirmRename"
+              class="text-xl font-bold border-none bg-transparent focus:outline-none focus:bg-gray-100 px-2 py-1 rounded transition"
+              style="flex: 1; min-width: 0; max-width: 75%;"
+            />
+            <div class="habit-modal-header-buttons" style="position: relative; right: 0;">
+              <button @click="deleteHabit"
+                class="habit-modal-delete w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-600 text-xl shadow"
+                title="Delete Habit"
+                style="margin-left: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-7 0v10a2 2 0 002 2h4a2 2 0 002-2V7" />
+                </svg>
+              </button>
+              <button @click="closeHabitDetail"
+                class="habit-modal-close w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-xl text-gray-600 shadow"
+                title="Close"
+                style="margin-left: 8px;">
+                &times;
+              </button>
+            </div>
+          </div>
+          <!-- Calendar -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <button @click="prevMonth" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-lg">&lt;</button>
+              <span class="font-semibold text-base">{{ calendarMonthName }} {{ calendarYear }}</span>
+              <button @click="nextMonth" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-lg">&gt;</button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 mb-2">
+              <div v-for="day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="day"
+                class="text-xs text-left text-gray-500 font-medium py-1">
+                {{ day }}
+              </div>
+            </div>
+            <div class="grid grid-cols-7 gap-1">
+              <div v-for="blank in calendarBlanks" :key="'blank'+blank"></div>
+              <div v-for="dateObj in calendarDates" :key="dateObj.date"
+                class="w-8 h-8 flex items-center justify-center text-sm border rounded cursor-pointer transition-colors duration-150"
+                :class="{
+                  'bg-green-500 text-white font-bold': isHabitCompleted(selectedHabit, dateObj.date),
+                  'bg-gray-200 text-gray-500': !isHabitCompleted(selectedHabit, dateObj.date),
+                  'border-2 border-blue-700': dateObj.date === selectedDate
+                }"
+                @click="toggleCompleteDetail(dateObj.date)"
+                style="margin-bottom: 2px;">
+                {{ dateObj.day }}
+              </div>
+            </div>
+          </div>
+          <!-- Message Section -->
+          <div class="mt-4">
+            <h4 class="mb-2">Logs</h4>
+            <div v-if="getMessages(selectedHabit).length === 0" class="text-gray-400 mb-2">No logs yet.</div>
+            <div class="mb-2 bg-gray-100 rounded overflow-y-auto" style="max-height: 12rem;">
+              <div v-for="msg in safeMessages" :key="msg.timestamp" class="p-2 border-b last:border-b-0">
+                <div class="text-xs text-gray-500 mb-1">{{ formatTimestamp(msg.timestamp) }}</div>
+                <div>{{ msg.text }}</div>
+              </div>
+            </div>
+            <!-- Message input with send icon -->
+            <div class="flex items-center mt-2 relative">
+              <input v-model="messageInput"
+                     @keyup.enter="sendMessage"
+                     placeholder="Enter message"
+                     class="border p-2 w-full rounded pr-10" />
+              <button @click="sendMessage"
+                      class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700"
+                      style="background: none; border: none; padding: 0;">
+                <!-- Send icon SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Habit Modal -->
+      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
+          <h3 class="text-lg font-bold mb-2">Add Habit</h3>
+          <input v-model="newHabit.name" placeholder="Habit name" class="border p-2 w-full rounded mb-2">
+          <input v-model="newHabit.frequency" placeholder="e.g., Daily" class="border p-2 w-full rounded mb-2">
+          <button @click="addHabit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Save</button>
+          <button @click="showModal = false" class="mt-2 text-gray-500 w-full">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Floating Add Button -->
+      <button
+        @click="showModal = true"
+        class="fixed right-4 bottom-4 md:bottom-20 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg z-50"
+        style="transition: bottom 0.2s;"
+      >
+        <span class="text-2xl">+</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/habits.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
+  </script>
+</body>
+</html>
