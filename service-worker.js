@@ -5,7 +5,6 @@ const FILES_TO_CACHE = [
   './index.html',
   './css/styles.css',
   './css/tailwind.min.css',
-  './assets/d_note.mp3',
   './js/utils.js',
   './js/habits.js',
   './js/app.js',
