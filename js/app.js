@@ -1,213 +1,192 @@
 const { createApp, ref, computed } = Vue;
 
 const app = createApp({
-  setup() {
-    const store = createHabitStore();
-    const habits = ref(store.habits);
-    const newHabit = ref({ name: '', frequency: 'Daily', completedDates: [], messages: [] });
-    const showModal = ref(false);
-
-    // Detail view state
-    const showHabitDetail = ref(false);
-    const selectedHabit = ref(null);
-    const selectedDate = ref('');
-    const messageInput = ref('');
-
-    // Calendar state
-    const today = new Date();
-    const calendarMonth = ref(today.getMonth());
-    const calendarYear = ref(today.getFullYear());
-
-    const calendarMonthName = computed(() =>
-      new Date(calendarYear.value, calendarMonth.value).toLocaleString('default', { month: 'long' })
-    );
-
-    function getDaysInMonth(year, month) {
-      return new Date(year, month + 1, 0).getDate();
-    }
-
-    const calendarBlanks = computed(() => {
-      const firstDay = new Date(calendarYear.value, calendarMonth.value, 1).getDay();
+  data() {
+    return {
+      habits: [],
+      newHabit: { name: '', frequency: 'Daily', completedDates: [], messages: [] },
+      showModal: false,
+      // Detail view state
+      showHabitDetail: false,
+      selectedHabit: null,
+      selectedDate: '',
+      messageInput: '',
+      // Calendar state
+      today: new Date(),
+      calendarMonth: new Date().getMonth(),
+      calendarYear: new Date().getFullYear(),
+      // Expanded habit view state
+      expandedHabitId: null,
+      renameInput: '',
+    };
+  },
+  computed: {
+    calendarMonthName() {
+      return new Date(this.calendarYear, this.calendarMonth).toLocaleString('default', { month: 'long' });
+    },
+    getDaysInMonth() {
+      return (year, month) => new Date(year, month + 1, 0).getDate();
+    },
+    calendarBlanks() {
+      const firstDay = new Date(this.calendarYear, this.calendarMonth, 1).getDay();
       return (firstDay === 0 ? 6 : firstDay - 1);
-    });
-
-    const calendarDates = computed(() => {
+    },
+    calendarDates() {
       const days = [];
-      const daysInMonth = getDaysInMonth(calendarYear.value, calendarMonth.value);
+      const daysInMonth = this.getDaysInMonth(this.calendarYear, this.calendarMonth);
       for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(calendarYear.value, calendarMonth.value, d);
+        const date = new Date(this.calendarYear, this.calendarMonth, d);
         const iso = date.toISOString().split('T')[0];
         days.push({ day: d, date: iso });
       }
       return days;
-    });
-
-    // Add habit
-    const addHabit = () => {
-      if (newHabit.value.name) {
-        store.addHabit(newHabit.value);
-        habits.value = createHabitStore().habits;
-        newHabit.value = { name: '', frequency: 'Daily', completedDates: [], messages: [] };
-        showModal.value = false;
-      }
-    };
-
-    // Toggle complete for main view
-    const toggleComplete = (habit, date) => {
-      store.toggleComplete(habit, date);
-      habits.value = createHabitStore().habits;
-    };
-
-    const isHabitCompleted = (habit, date) => {
-      return store.isHabitCompleted(habit, date);
-    };
-
-    // Detail view logic
-    function openHabitDetail(habit) {
-      selectedHabit.value = { ...habit };
-      showHabitDetail.value = true;
-      renameInput.value = habit.name;
-      // Default to today
-      const todayIso = new Date(calendarYear.value, calendarMonth.value, today.getDate()).toISOString().split('T')[0];
-      selectedDate.value = todayIso;
-      messageInput.value = '';
-    }
-
-    function closeHabitDetail() {
-      showHabitDetail.value = false;
-      selectedHabit.value = null;
-      selectedDate.value = '';
-      messageInput.value = '';
-    }
-
-    function toggleCompleteDetail(date) {
-      store.toggleComplete(selectedHabit.value, date);
-      habits.value = createHabitStore().habits;
-    }
-
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      if (text) {
-        store.addMessage(selectedHabit.value, text);
-        habits.value = createHabitStore().habits;
-        messageInput.value = '';
-      }
-    }
-
-    function getMessages(habit) {
-      return store.getMessages(habit);
-    }
-
-    const safeMessages = computed(() => {
-      const msgs = getMessages(selectedHabit.value);
-      return Array.isArray(msgs) ? msgs.slice(0, 4) : [];
-    });
-
-    function formatTimestamp(ts) {
-      const d = new Date(ts);
-      return d.toLocaleString();
-    }
-
-    function prevMonth() {
-      if (calendarMonth.value === 0) {
-        calendarMonth.value = 11;
-        calendarYear.value -= 1;
-      } else {
-        calendarMonth.value -= 1;
-      }
-    }
-
-    function nextMonth() {
-      if (calendarMonth.value === 11) {
-        calendarMonth.value = 0;
-        calendarYear.value += 1;
-      } else {
-        calendarMonth.value += 1;
-      }
-    }
-
-    const renaming = ref(false);
-    const renameInput = ref('');
-
-    function confirmRename() {
-      const newName = renameInput.value.trim();
-      if (newName && selectedHabit.value.name !== newName) {
-        store.renameHabit(selectedHabit.value.id, newName);
-        habits.value = createHabitStore().habits;
-        selectedHabit.value.name = newName;
-      }
-    }
-
-    function deleteHabit() {
-      if (confirm('Are you sure you want to delete this habit?')) {
-        store.deleteHabit(selectedHabit.value.id);
-        habits.value = createHabitStore().habits;
-        closeHabitDetail();
-      }
-    }
-
-    const last7Days = computed(() => {
-  const days = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    days.push(`${yyyy}-${mm}-${dd}`);
-  }
-  return days;
-});
-
-    function getLast7Days() {
-    const days = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    for (let i = 6; i >= 0; i--) {
+    },
+    safeMessages() {
+      // Only show messages for the expanded habit, latest first
+      if (!this.expandedHabitId) return [];
+      const habit = this.habits.find(h => h.id === this.expandedHabitId);
+      return habit && habit.messages ? [...habit.messages].sort((a, b) => b.timestamp - a.timestamp) : [];
+    },
+    last7Days() {
+      const days = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(today.getDate() - i);
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
         days.push(`${yyyy}-${mm}-${dd}`);
-    }
-    return days;
-    }
-
-    return {
-      habits,
-      newHabit,
-      showModal,
-      addHabit,
-      toggleComplete,
-      isHabitCompleted,
-      getLast7Days,
-      last7Days,
-      // Detail view
-      showHabitDetail,
-      selectedHabit,
-      openHabitDetail,
-      closeHabitDetail,
-      calendarMonth,
-      calendarYear,
-      calendarMonthName,
-      calendarBlanks,
-      calendarDates,
-      selectedDate,
-      toggleCompleteDetail,
-      messageInput,
-      sendMessage,
-      getMessages,
-      safeMessages,
-      formatTimestamp,
-      prevMonth,
-      nextMonth,
-      // Rename and delete
-      renameInput,
-      confirmRename,
-      deleteHabit,
-    };
+      }
+      return days;
+    },
   },
+  methods: {
+    addHabit() {
+      if (this.newHabit.name) {
+        this.habits.push({ ...this.newHabit, id: Date.now() });
+        this.newHabit = { name: '', frequency: 'Daily', completedDates: [], messages: [] };
+        this.showModal = false;
+        this.saveHabits();
+      }
+    },
+    toggleComplete(habit, date) {
+      const h = this.habits.find(x => x.id === habit.id);
+      if (h) {
+        const index = h.completedDates.indexOf(date);
+        if (index === -1) {
+          h.completedDates.push(date);
+        } else {
+          h.completedDates.splice(index, 1);
+        }
+        this.saveHabits();
+      }
+    },
+    isHabitCompleted(habit, date) {
+      const h = this.habits.find(x => x.id === habit.id);
+      return h ? h.completedDates.includes(date) : false;
+    },
+    openHabitDetail(habit) {
+      this.selectedHabit = { ...habit };
+      this.showHabitDetail = true;
+      this.renameInput = habit.name;
+      // Default to today
+      const todayIso = new Date(this.calendarYear, this.calendarMonth, this.today.getDate()).toISOString().split('T')[0];
+      this.selectedDate = todayIso;
+      this.messageInput = '';
+    },
+    closeHabitDetail() {
+      this.showHabitDetail = false;
+      this.selectedHabit = null;
+      this.selectedDate = '';
+      this.messageInput = '';
+    },
+    toggleCompleteDetail(date) {
+      this.toggleComplete(this.selectedHabit, date);
+    },
+    sendMessage() {
+      if (!this.expandedHabitId) return;
+      const text = this.messageInput.trim();
+      if (!text) return;
+      const habit = this.habits.find(h => h.id === this.expandedHabitId);
+      if (!habit) return;
+      if (!habit.messages) habit.messages = [];
+      habit.messages.push({
+        text,
+        timestamp: Date.now()
+      });
+      this.messageInput = '';
+      this.saveHabits();
+    },
+    getMessages(habit) {
+      return habit && habit.messages ? habit.messages : [];
+    },
+    formatTimestamp(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString();
+    },
+    prevMonth() {
+      if (this.calendarMonth === 0) {
+        this.calendarMonth = 11;
+        this.calendarYear -= 1;
+      } else {
+        this.calendarMonth -= 1;
+      }
+    },
+    nextMonth() {
+      if (this.calendarMonth === 11) {
+        this.calendarMonth = 0;
+        this.calendarYear += 1;
+      } else {
+        this.calendarMonth += 1;
+      }
+    },
+    confirmRename() {
+      const newName = this.renameInput.trim();
+      // Use expandedHabitId if present, otherwise selectedHabit (for modal)
+      let habit = null;
+      if (this.expandedHabitId) {
+        habit = this.habits.find(h => h.id === this.expandedHabitId);
+      } else if (this.selectedHabit) {
+        habit = this.habits.find(h => h.id === this.selectedHabit.id);
+      }
+      if (!habit) return;
+      if (newName && habit.name !== newName) {
+        habit.name = newName;
+        this.saveHabits();
+      }
+    },
+    deleteHabit() {
+      if (confirm('Are you sure you want to delete this habit?')) {
+        this.habits = this.habits.filter(h => h.id !== this.selectedHabit.id);
+        this.closeHabitDetail();
+        this.saveHabits();
+      }
+    },
+    toggleExpandHabit(habit) {
+      if (this.expandedHabitId === habit.id) {
+        this.expandedHabitId = null;
+      } else {
+        this.expandedHabitId = habit.id;
+        this.renameInput = habit.name;
+        this.messageInput = '';
+      }
+    },
+    closeExpandHabit() {
+      this.expandedHabitId = null;
+      this.messageInput = '';
+    },
+    saveHabits() {
+      // Save habits to localStorage or your persistence layer
+      localStorage.setItem('habits', JSON.stringify(this.habits));
+    },
+  },
+  mounted() {
+    // Load habits from localStorage if available
+    const stored = localStorage.getItem('habits');
+    if (stored) {
+      this.habits = JSON.parse(stored);
+    }
+  }
 }).mount('#app');
