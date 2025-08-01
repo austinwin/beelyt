@@ -1,7 +1,7 @@
 # Beelyt - Habit Tracker
-Beelyt (Bee-light) App: https://austinwin.github.io/austinwin/  
+Beelyt App: https://austinwin.github.io/austinwin/  
 
-Beelyt is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
+**Beelyt** (short for Bee-light—habit and discipline like a bee) is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
 It’s fast, mobile-friendly, and works offline—no accounts, no cloud, no tracking.  
 
 I originally built Beelyt for myself, but I’m sharing it in case it helps someone else.  
