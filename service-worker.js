@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-tracker-v1';  // Add versioning
+const CACHE_NAME = 'habit-tracker-v1.1';  // Add versioning
 // NOTE: Increment CACHE_NAME when deploying new versions to force cache update.
 const FILES_TO_CACHE = [
   './', // safe relative root
