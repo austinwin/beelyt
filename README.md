@@ -42,5 +42,3 @@ For offline access, add Beelyt to your home screen (PWA support).
 
 
 ---
-
-**Enjoy your journey. Your habits, your privacy,
