@@ -4,9 +4,12 @@ const FILES_TO_CACHE = [
   './', // safe relative root
   './index.html',
   './css/styles.css',
+  './css/tailwind.min.css',
+  './assets/d_note.mp3',
   './js/utils.js',
   './js/habits.js',
   './js/app.js',
+  './js/vue.global.prod.js',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png'
 ];
