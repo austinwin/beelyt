@@ -7,10 +7,18 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4CAF50">
   <link rel="icon" href="icons/icon-192x192.png">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="css/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90 z-[9999] transition-opacity duration-500">
+    <div class="flex flex-col items-center">
+      <div class="loader-spinner mb-4"></div>
+      <div class="text-green-600 font-semibold text-lg">Loading Beelyt...</div>
+    </div>
+  </div>
+
   <div id="app" class="p-4 min-h-screen bg-gray-100">
     <div class="max-w-md mx-auto">
       <h1 class="text-2xl font-bold mb-4">Beelyt - Habits</h1>
@@ -121,7 +129,7 @@
             <div class="flex items-center mt-2 relative">
               <input v-model="messageInput"
                      @keyup.enter="sendMessage"
-                     placeholder="Enter message"
+                     placeholder="enter log"
                      class="border p-2 w-full rounded pr-10" />
               <button @click="sendMessage"
                       class="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700"
@@ -140,8 +148,10 @@
       <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
           <h3 class="text-lg font-bold mb-2">Add Habit</h3>
-          <input v-model="newHabit.name" placeholder="Habit name" class="border p-2 w-full rounded mb-2">
-          <input v-model="newHabit.frequency" placeholder="e.g., Daily" class="border p-2 w-full rounded mb-2">
+          <input v-model="newHabit.name" placeholder="Habit name" class="border p-2 w-full rounded mb-2"
+             @keyup.enter="addHabit">
+          <input v-model="newHabit.frequency" placeholder="Frequency: e.g, Daily" class="border p-2 w-full rounded mb-2"
+             @keyup.enter="addHabit">
           <button @click="addHabit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Save</button>
           <button @click="showModal = false" class="mt-2 text-gray-500 w-full">Cancel</button>
         </div>
@@ -159,7 +169,7 @@
 
   </div>
 
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="js/vue.global.prod.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/habits.js"></script>
   <script src="js/app.js"></script>
@@ -167,6 +177,30 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js');
     }
+
+    // Hide loader when Vue app is mounted and scripts are loaded
+    function hideLoader() {
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+      }
+    }
+
+    // Wait for Vue and DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for Vue app to mount
+      const checkVueMounted = setInterval(() => {
+        // Vue 3 global app is mounted when #app has child nodes
+        const appDiv = document.getElementById('app');
+        if (appDiv && appDiv.childNodes.length > 0) {
+          hideLoader();
+          clearInterval(checkVueMounted);
+        }
+      }, 50);
+      // Fallback: hide loader after 5s
+      setTimeout(hideLoader, 5000);
+    });
   </script>
 </body>
 </html>
