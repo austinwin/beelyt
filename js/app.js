@@ -102,8 +102,8 @@ const app = createApp({
       this.selectedDate = '';
       this.messageInput = '';
     },
-    toggleCompleteDetail(date) {
-      this.toggleComplete(this.selectedHabit, date);
+    toggleCompleteDetail(habit, date) {
+      this.toggleComplete(habit, date);
     },
     sendMessage() {
       if (!this.expandedHabitId) return;
@@ -158,8 +158,16 @@ const app = createApp({
       }
     },
     deleteHabit() {
+      let habitId = null;
+      if (this.expandedHabitId) {
+        habitId = this.expandedHabitId;
+      } else if (this.selectedHabit) {
+        habitId = this.selectedHabit.id;
+      }
+      if (!habitId) return;
       if (confirm('Are you sure you want to delete this habit?')) {
-        this.habits = this.habits.filter(h => h.id !== this.selectedHabit.id);
+        this.habits = this.habits.filter(h => h.id !== habitId);
+        this.closeExpandHabit();
         this.closeHabitDetail();
         this.saveHabits();
       }
