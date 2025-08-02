@@ -1,13 +1,21 @@
 # Beelyt - Habit Tracker
 Beelyt App: https://austinwin.github.io/austinwin/  
 
-**Beelyt** (short for Bee-light : habit and discipline like a bee) is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
-It’s fast, mobile-friendly, and works offline—no accounts, no cloud, no tracking.  
+[Beelyt App](https://austinwin.github.io/austinwin/)  
+**Beelyt** (short for Bee-light: habit and discipline like a bee) is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
+It’s fast, mobile-friendly, and works offline—no accounts, no cloud, no tracking.
 
 I originally built Beelyt for myself, but I’m sharing it in case it helps someone else.  
-It’s not packed with features, but it’s yours—simple, private, and always ready.  
+It’s not packed with features, but it’s yours—simple, private, and always ready.
 
-<img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/1d2656c8-dbb6-4773-a069-0cfd83b35b54" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/0dc63acf-b610-4880-a129-679f3e9fb487" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/0ac841ba-ab1a-4f01-9298-beb8ce139287" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/93c1f301-dd88-4eb9-9d50-86190784e645" />
+<!-- Image grid with responsive layout using HTML inside Markdown -->
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1d2656c8-dbb6-4773-a069-0cfd83b35b54" width="22%" />
+  <img src="https://github.com/user-attachments/assets/0dc63acf-b610-4880-a129-679f3e9fb487" width="22%" />
+  <img src="https://github.com/user-attachments/assets/0ac841ba-ab1a-4f01-9298-beb8ce139287" width="22%" />
+  <img src="https://github.com/user-attachments/assets/93c1f301-dd88-4eb9-9d50-86190784e645" width="22%" />
+</p>
+
 
 
 
