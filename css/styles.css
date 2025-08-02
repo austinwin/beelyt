@@ -344,11 +344,6 @@ body {
     max-width: 28rem;
     margin: 0 auto;
   }
-
-  .floating-add-button {
-    bottom: 2rem;
-    right: 2rem;
-  }
 }
 
 /* Accessibility Enhancements */
