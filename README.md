@@ -7,6 +7,12 @@ It’s fast, mobile-friendly, and works offline—no accounts, no cloud, no trac
 I originally built Beelyt for myself, but I’m sharing it in case it helps someone else.  
 It’s not packed with features, but it’s yours—simple, private, and always ready.  
 
+<img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/1d2656c8-dbb6-4773-a069-0cfd83b35b54" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/0dc63acf-b610-4880-a129-679f3e9fb487" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/0ac841ba-ab1a-4f01-9298-beb8ce139287" /> <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/93c1f301-dd88-4eb9-9d50-86190784e645" />
+
+
+
+
+
 ## Purpose
 
 Track your habits, mark completions, and jot down daily notes—all in a clean, distraction-free interface. Beelyt helps you build consistency and celebrate progress, one day at a time.
@@ -16,7 +22,8 @@ Track your habits, mark completions, and jot down daily notes—all in a clean, 
 - **Add, rename, and delete habits**  
 - **Mark habits as completed for any day**  
 - **View your last 7 days and monthly calendar**  
-- **Log notes for each habit**  
+- **Log notes for each habit**
+- **Re-arrange the order of important habits**  
 - **All data stored locally—your habits, your privacy**  
 - **Works offline (PWA support)**  
 - **Mobile-first design**
