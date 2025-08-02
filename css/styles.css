@@ -217,19 +217,29 @@ body {
   outline: none;
 }
 
-.habit-message-input button {
+.habit-message-input button,
+.relative.mb-2 > button {
   position: absolute;
-  right: 0.75rem;
+  right: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: #eff6ff; /* blue-50 */
   border: none;
   color: #3b82f6;
   cursor: pointer;
-  transition: color 0.2s ease;
+  border-radius: 9999px;
+  padding: 0.25rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
 }
 
-.habit-message-input button:hover {
+.habit-message-input button:hover,
+.relative.mb-2 > button:hover {
+  background: #dbeafe; /* blue-100 */
   color: #1e40af;
 }
 
