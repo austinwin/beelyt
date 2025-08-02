@@ -97,13 +97,14 @@
       <div class="grid grid-cols-7 gap-1">
         <div v-for="blank in calendarBlanks" :key="'blank'+blank"></div>
         <div v-for="dateObj in calendarDates" :key="dateObj.date"
-             class="w-10 h-10 flex items-center justify-center text-sm border rounded cursor-pointer transition-colors"
+             class="w-10 h-10 flex items-center justify-center text-sm border rounded transition-colors"
              :class="{
-               'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, dateObj.date),
-               'bg-gray-200 text-gray-600 border-gray-300': !isHabitCompleted(habit, dateObj.date),
-               'ring-2 ring-blue-600': dateObj.date === selectedDate
+               'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, dateObj.date) && !isFutureDate(dateObj.date),
+               'bg-gray-200 text-gray-600 border-gray-300': !isHabitCompleted(habit, dateObj.date) && !isFutureDate(dateObj.date),
+               'ring-2 ring-blue-600': dateObj.date === selectedDate && !isFutureDate(dateObj.date),
+               'bg-gray-50 text-gray-300 cursor-not-allowed': isFutureDate(dateObj.date)
              }"
-             @click="toggleCompleteDetail(habit, dateObj.date)">
+             @click="!isFutureDate(dateObj.date) && toggleCompleteDetail(habit, dateObj.date)">
           {{ dateObj.day }}
         </div>
       </div>

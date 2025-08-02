@@ -189,6 +189,12 @@ const app = createApp({
       // Save habits to localStorage or your persistence layer
       localStorage.setItem('habits', JSON.stringify(this.habits));
     },
+    isFutureDate(date) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const d = new Date(date + 'T00:00:00');
+      return d > today;
+    },
   },
   mounted() {
     // Load habits from localStorage if available
