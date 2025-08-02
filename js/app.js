@@ -18,6 +18,12 @@ const app = createApp({
       // Expanded habit view state
       expandedHabitId: null,
       renameInput: '',
+      // Drag and drop state
+      draggingIdx: null,
+      dragOverIdx: null,
+      dragTouchTimer: null,
+      dragTouchStartY: null,
+      dragTouchIdx: null,
     };
   },
   computed: {
@@ -194,6 +200,72 @@ const app = createApp({
       today.setHours(0,0,0,0);
       const d = new Date(date + 'T00:00:00');
       return d > today;
+    },
+    onDragStart(idx, e) {
+      this.draggingIdx = idx;
+      e.dataTransfer.effectAllowed = 'move';
+      // For Firefox compatibility
+      e.dataTransfer.setData('text/plain', idx);
+    },
+    onDragOver(idx, e) {
+      if (this.draggingIdx !== null && idx !== this.draggingIdx) {
+        this.dragOverIdx = idx;
+      }
+    },
+    onDrop(idx, e) {
+      if (this.draggingIdx !== null && idx !== this.draggingIdx) {
+        const moved = this.habits.splice(this.draggingIdx, 1)[0];
+        this.habits.splice(idx, 0, moved);
+        this.saveHabits();
+      }
+      this.draggingIdx = null;
+      this.dragOverIdx = null;
+    },
+    onDragEnd() {
+      this.draggingIdx = null;
+      this.dragOverIdx = null;
+    },
+    // Touch support for mobile (long press to start drag)
+    onTouchStart(idx, e) {
+      this.dragTouchIdx = idx;
+      this.dragTouchStartY = e.touches[0].clientY;
+      this.dragTouchTimer = setTimeout(() => {
+        this.draggingIdx = idx;
+      }, 300); // 300ms long press
+    },
+    onTouchMove(e) {
+      if (this.draggingIdx !== null) {
+        const y = e.touches[0].clientY;
+        // Find the closest habit index to the current Y
+        const habitEls = Array.from(document.querySelectorAll('[draggable="true"]'));
+        let closestIdx = null;
+        let minDist = Infinity;
+        habitEls.forEach((el, i) => {
+          const rect = el.getBoundingClientRect();
+          const dist = Math.abs(rect.top + rect.height / 2 - y);
+          if (dist < minDist) {
+            minDist = dist;
+            closestIdx = i;
+          }
+        });
+        if (closestIdx !== null && closestIdx !== this.draggingIdx) {
+          this.dragOverIdx = closestIdx;
+        }
+      } else {
+        clearTimeout(this.dragTouchTimer);
+      }
+    },
+    onTouchEnd(e) {
+      clearTimeout(this.dragTouchTimer);
+      if (this.draggingIdx !== null && this.dragOverIdx !== null && this.draggingIdx !== this.dragOverIdx) {
+        const moved = this.habits.splice(this.draggingIdx, 1)[0];
+        this.habits.splice(this.dragOverIdx, 0, moved);
+        this.saveHabits();
+      }
+      this.draggingIdx = null;
+      this.dragOverIdx = null;
+      this.dragTouchIdx = null;
+      this.dragTouchStartY = null;
     },
   },
   mounted() {

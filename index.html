@@ -25,11 +25,39 @@
       <div v-if="habits.length === 0" class="text-center text-gray-500 mb-6">
         Add habit to track
       </div>
-<div v-for="habit in habits" :key="habit.id"
-     class="bg-white p-3 rounded-xl shadow-md mb-3">
-
+<div v-for="(habit, idx) in habits" :key="habit.id"
+     class="bg-white p-3 rounded-xl shadow-md mb-3"
+     draggable="true"
+     @dragstart="onDragStart(idx, $event)"
+     @dragover.prevent="onDragOver(idx, $event)"
+     @drop="onDrop(idx, $event)"
+     @dragend="onDragEnd"
+     @touchstart="onTouchStart(idx, $event)"
+     @touchmove="onTouchMove($event)"
+     @touchend="onTouchEnd"
+     :class="{
+       'opacity-50': draggingIdx === idx,
+       'ring-2 ring-blue-400': dragOverIdx === idx && draggingIdx !== null
+     }"
+>
   <!-- Header: name (2-line clamp), quick actions -->
   <div class="flex items-start gap-2">
+    <!-- Drag handle (industry standard grip dots) -->
+    <span
+      class="mr-1 flex items-center select-none"
+      :class="(draggingIdx === idx) ? 'cursor-grabbing' : 'cursor-grab'"
+      title="Drag to reorder"
+    >
+      <!-- SVG grip dots icon -->
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20" class="text-gray-400">
+        <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+        <circle cx="6" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="6" cy="14" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="6" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="14" r="1.5" fill="currentColor"/>
+      </svg>
+    </span>
     <h3
       class="flex-1 text-base font-semibold leading-tight cursor-pointer text-blue-600 hover:underline break-words line-clamp-2"
       @click="toggleExpandHabit(habit)"
@@ -66,7 +94,7 @@
     <!-- Rename + delete stay here, larger targets -->
     <div class="habit-modal-header flex items-center mb-3 relative">
       <div class="relative flex-grow">
-      <!-- Pencil icon badge (absolute, top left of input) -->
+      <!-- Pencil icon badge (absolute, top-0 left-0 of input) -->
       <span class="absolute left-0 top-0 text-gray-400 pointer-events-none" style="z-index:2;">
         <!-- Improved pencil icon -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
