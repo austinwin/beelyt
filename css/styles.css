@@ -93,7 +93,6 @@ body {
   border-radius: 6px;
   transition: background 0.2s ease, border 0.2s ease;
   width: 100%;
-  max-width: 70%;
 }
 
 .habit-modal-header input:focus {

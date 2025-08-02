@@ -64,12 +64,25 @@
   <!-- Expanded panel -->
   <div v-if="expandedHabitId === habit.id" class="mt-3 bg-gray-50 rounded-lg p-3 shadow-inner">
     <!-- Rename + delete stay here, larger targets -->
-    <div class="habit-modal-header flex items-center mb-3">
+    <div class="habit-modal-header flex items-center mb-3 relative">
+      <div class="relative flex-grow">
+      <!-- Pencil icon badge (absolute, top left of input) -->
+      <span class="absolute left-0 top-0 text-gray-400 pointer-events-none" style="z-index:2;">
+        <!-- Improved pencil icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16.862 3.487a2.25 2.25 0 013.182 3.182l-11.25 11.25a2 2 0 01-.878.513l-4 1a1 1 0 01-1.213-1.213l1-4a2 2 0 01.513-.878l11.25-11.25z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 6l3 3" />
+        </svg>
+      </span>
       <input v-model="renameInput"
              @blur="confirmRename"
              @keyup.enter="confirmRename"
-             class="text-xl font-bold border-none bg-transparent focus:outline-none focus:bg-gray-100 px-2 py-1 rounded"
-             style="flex:1;min-width:0;" />
+             class="text-xl font-bold border-none bg-transparent focus:outline-none focus:bg-gray-100 py-1 rounded w-full transition"
+             style="flex:1;min-width:0; padding-left:0;"
+      />
+      </div>
       <button @click="deleteHabit"
               class="ml-2 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-600">
         <!-- same trash icon -->
