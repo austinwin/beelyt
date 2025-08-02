@@ -149,16 +149,15 @@
         </div>
       </div>
 
-      <!-- Floating Add Button -->
-      <button
-        @click="showModal = true"
-        class="fixed right-4 bottom-4 md:bottom-20 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg z-50"
-        style="transition: bottom 0.2s;"
-      >
-        <span class="text-2xl">+</span>
-      </button>
     </div>
-
+    <!-- Floating Add Button: always fixed to viewport bottom right -->
+    <button
+      @click="showModal = true"
+      class="floating-add-button fixed right-4 bottom-4 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg z-50"
+      style="transition: bottom 0.2s;"
+    >
+      <span class="text-2xl">+</span>
+    </button>
   </div>
 
   <script src="js/vue.global.prod.js"></script>
