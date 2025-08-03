@@ -24,6 +24,8 @@ const app = createApp({
       dragTouchTimer: null,
       dragTouchStartY: null,
       dragTouchIdx: null,
+      // Menu state
+      menuOpen: false,
     };
   },
   computed: {
@@ -271,6 +273,88 @@ const app = createApp({
       habit.important = !habit.important;
       this.saveHabits();
     },
+    exportHabits() {
+      this.menuOpen = false;
+      const data = JSON.stringify(this.habits, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'beelyt-habits.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    },
+    triggerImport() {
+      this.menuOpen = false;
+      this.$refs.importInput.value = '';
+      this.$refs.importInput.click();
+    },
+    handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (Array.isArray(imported)) {
+            // Optionally: merge or replace
+            imported.forEach(h => {
+              if (!this.habits.some(existing => existing.id === h.id)) {
+                this.habits.push(h);
+              }
+            });
+            this.saveHabits();
+            alert('Habits imported!');
+          } else {
+            alert('Invalid file format.');
+          }
+        } catch {
+          alert('Failed to import.');
+        }
+      };
+      reader.readAsText(file);
+    },
+    shareHabits() {
+      this.menuOpen = false;
+      const data = JSON.stringify(this.habits, null, 2);
+      if (navigator.share) {
+        const blob = new Blob([data], { type: 'application/json' });
+        const file = new File([blob], 'beelyt-habits.json', { type: 'application/json' });
+        navigator.share({
+          title: 'Beelyt Habits',
+          text: 'Here are my Beelyt habits!',
+          files: [file]
+        }).catch(() => {});
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(data).then(() => {
+          alert('Habits JSON copied to clipboard!');
+        });
+      }
+    },
+    supportBeelyt() {
+      this.menuOpen = false;
+      window.open('https://buymeacoffee.com/austinwin', '_blank');
+    },
+    toggleMenu(e) {
+      this.menuOpen = !this.menuOpen;
+    },
+    handleClickOutside(e) {
+      // Only close if menu is open and click is outside the menu/hamburger
+      if (!this.menuOpen) return;
+      const menu = document.querySelector('nav[aria-label="Menu"], nav[role="menu"], nav[aria-expanded]');
+      const btn = document.querySelector('button[aria-label="Open menu"]');
+      if (
+        this.menuOpen &&
+        !e.target.closest('.relative') // .relative wraps both button and menu
+      ) {
+        this.menuOpen = false;
+      }
+    },
   },
   mounted() {
     // Load habits from localStorage if available
@@ -278,5 +362,9 @@ const app = createApp({
     if (stored) {
       this.habits = JSON.parse(stored);
     }
+    document.addEventListener('click', this.handleClickOutside, true);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside, true);
   }
 }).mount('#app');

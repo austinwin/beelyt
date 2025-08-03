@@ -21,7 +21,68 @@
 
   <div id="app" class="p-4 min-h-screen bg-gray-100">
     <div class="max-w-md mx-auto">
-      <h1 class="text-2xl font-bold mb-4">Beelyt - Habits</h1>
+      <div class="flex items-center mb-4">
+        <h1 class="text-2xl font-bold flex-1">Beelyt - The Habits</h1>
+        <!-- Hamburger Menu -->
+        <div class="relative" @keydown.esc="menuOpen = false">
+          <button @click="toggleMenu"
+                  :aria-expanded="menuOpen"
+                  aria-label="Open menu"
+                  class="focus:outline-none p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  style="height: 40px; width: 40px; display: flex; align-items: center; justify-content: center;">
+            <!-- SVG Menu Icon with animation -->
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" 
+                 stroke-width="2" fill="none" stroke-linecap="round" 
+                 stroke-linejoin="round" class="text-gray-800 transition-transform duration-300"
+                 :class="menuOpen ? 'scale-110' : ''">
+              <!-- Top line -->
+              <line x1="4" :y1="menuOpen ? 12 : 6" x2="20" :y2="menuOpen ? 12 : 6"
+                    :class="menuOpen 
+                      ? 'transform rotate-45 origin-center'
+                      : ''"
+                    class="transition-transform duration-300"></line>
+              <!-- Middle line -->
+              <line x1="4" y1="12" x2="20" y2="12"
+                    class="transition-opacity duration-300"
+                    :class="menuOpen ? 'opacity-0' : 'opacity-100'"></line>
+              <!-- Bottom line -->
+              <line x1="4" :y1="menuOpen ? 12 : 18" x2="20" :y2="menuOpen ? 12 : 18"
+                    :class="menuOpen 
+                      ? 'transform -rotate-45 origin-center'
+                      : ''"
+                    class="transition-transform duration-300"></line>
+            </svg>
+          </button>
+          <!-- Overlay for click-outside -->
+          <div v-if="menuOpen"
+               @click="menuOpen = false"
+               class="fixed inset-0 z-40"></div>
+          <!-- Dropdown Menu -->
+          <nav v-if="menuOpen"
+               class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl z-50 border border-gray-100 py-2 animate-fade-in"
+               style="min-width:0;">
+            <button @click="exportHabits"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-green-50 transition rounded-lg">
+              <span class="text-green-500 text-lg">⬇️</span>
+              Export Habits
+            </button>
+            <button @click="triggerImport"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-green-50 transition rounded-lg">
+              <span class="text-blue-500 text-lg">⬆️</span>
+              Import Habits
+            </button>
+            <button @click="supportBeelyt"
+              class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-yellow-600 hover:bg-yellow-50 transition rounded-lg">
+              <span class="flex items-center justify-center h-5 text-lg">💛</span>
+              Support Beelyt
+            </button>
+            <!-- Hidden file input for import -->
+            <input ref="importInput" type="file" accept="application/json"
+                   class="hidden" @change="handleImportFile" />
+          </nav>
+        </div>
+      </div>
+      <!-- ...existing code... -->
       <div v-if="habits.length === 0" class="text-center text-gray-500 mb-6">
         Add habit to track
       </div>
