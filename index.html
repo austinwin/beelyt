@@ -28,12 +28,11 @@
           <button @click="toggleMenu"
                   :aria-expanded="menuOpen"
                   aria-label="Open menu"
-                  class="focus:outline-none p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  class="focus:outline-none p-2 rounded-lg hover:bg-green-100 transition-colors"
                   style="height: 40px; width: 40px; display: flex; align-items: center; justify-content: center;">
-            <!-- SVG Menu Icon with animation -->
-            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" 
-                 stroke-width="2" fill="none" stroke-linecap="round" 
-                 stroke-linejoin="round" class="text-gray-800 transition-transform duration-300"
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor"
+                 stroke-width="2.5" fill="none" stroke-linecap="round"
+                 stroke-linejoin="round" class="text-green-500 transition-transform duration-300"
                  :class="menuOpen ? 'scale-110' : ''">
               <!-- Top line -->
               <line x1="4" :y1="menuOpen ? 12 : 6" x2="20" :y2="menuOpen ? 12 : 6"
@@ -324,4 +323,5 @@
   </script>
 </body>
 
+</html>
 </html>
