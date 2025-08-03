@@ -39,7 +39,8 @@ Track your habits, mark completions, and jot down daily notes—all in a clean, 
 ## Data & Privacy
 
 Your data is stored **only in your browser** using localStorage.  
-No accounts, no tracking, no cloud sync—your habits and notes never leave your device.
+No accounts, no tracking, no cloud sync—your habits and notes never leave your device.  
+"offline habit tracker", "no account habit app", "PWA habit tracker", "minimal habit app", "privacy-first habit app".
 
 ## How It Works
 
