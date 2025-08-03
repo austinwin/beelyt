@@ -47,6 +47,7 @@
       class="mr-0.5 flex items-center select-none"
       :class="(draggingIdx === idx) ? 'cursor-grabbing' : 'cursor-grab'"
       title="Drag to reorder"
+      @click="toggleExpandHabit(habit)"
     >
       <!-- SVG grip dots icon -->
       <svg width="20" height="20" fill="none" viewBox="0 0 20 20" class="text-gray-400">
@@ -248,3 +249,4 @@
 </body>
 
 </html>
+
