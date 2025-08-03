@@ -70,6 +70,11 @@
               <span class="text-blue-500 text-lg">⬆️</span>
               Import Habits
             </button>
+            <button @click="shareApp"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-blue-50 transition rounded-lg">
+              <span class="text-blue-400 text-lg">🔗</span>
+              Share
+            </button>
             <button @click="supportBeelyt"
               class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-yellow-600 hover:bg-yellow-50 transition rounded-lg">
               <span class="flex items-center justify-center h-5 text-lg">💛</span>
@@ -320,8 +325,46 @@
       // Fallback: hide loader after 5s
       setTimeout(hideLoader, 5000);
     });
+
+    // Wait for Vue and DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Patch Vue app with shareApp if not already present
+      const checkVueApp = setInterval(() => {
+        if (window.Vue && window.app && window.app.config && window.app._instance) {
+          clearInterval(checkVueApp);
+          const vm = window.app._instance.proxy;
+          if (!vm.shareApp) {
+            vm.showShareCopied = false;
+            vm.shareApp = async function() {
+              const shareData = {
+                title: 'Beelyt - Habit Tracker',
+                text: 'A simple offline habit tracker. No account. No distractions. Just me. Try it: https://austinwin.github.io/beelyt/',
+                url: window.location.origin + window.location.pathname
+              };
+              if (navigator.share) {
+                try {
+                  await navigator.share(shareData);
+                } catch (e) {
+                  // User cancelled or error
+                }
+              } else if (navigator.clipboard) {
+                try {
+                  await navigator.clipboard.writeText(shareData.url);
+                  vm.showShareCopied = true;
+                  setTimeout(() => { vm.showShareCopied = false; }, 1500);
+                } catch (e) {
+                  alert('Copy failed. Please copy the link manually:\n' + shareData.url);
+                }
+              } else {
+                // Fallback: prompt
+                window.prompt('Copy this link:', shareData.url);
+              }
+            };
+          }
+        }
+      }, 50);
+    });
   </script>
 </body>
 
-</html>
 </html>
