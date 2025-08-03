@@ -384,36 +384,71 @@ const app = createApp({
     },
     // Fallback sharing method
     fallbackShare() {
-      // Create a temporary input to copy the URL
-      const dummy = document.createElement('input');
-      document.body.appendChild(dummy);
-      dummy.value = window.location.href;
-      dummy.select();
-      document.execCommand('copy');
-      document.body.removeChild(dummy);
+      // Try to use the Clipboard API first (better for PWAs)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => {
+            this.showToast('URL copied to clipboard! Share it with your friends.');
+          })
+          .catch(err => {
+            console.error('Clipboard API failed:', err);
+            this.fallbackCopyUsingExecCommand();
+          });
+      } else {
+        this.fallbackCopyUsingExecCommand();
+      }
+    },
+    
+    // Additional fallback for older browsers
+    fallbackCopyUsingExecCommand() {
+      try {
+        const dummy = document.createElement('textarea'); // Use textarea instead of input
+        dummy.style.position = 'fixed';
+        dummy.style.opacity = '0';
+        dummy.value = window.location.href;
+        document.body.appendChild(dummy);
+        dummy.focus();
+        dummy.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(dummy);
+        
+        if (successful) {
+          this.showToast('URL copied to clipboard! Share it with your friends.');
+        } else {
+          this.showManualShareInstructions();
+        }
+      } catch (err) {
+        console.error('execCommand error:', err);
+        this.showManualShareInstructions();
+      }
+    },
+    
+    // Show instructions when all clipboard methods fail
+    showManualShareInstructions() {
+      // Create a modal with the URL and instructions
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+      modal.innerHTML = `
+        <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
+          <h3 class="text-lg font-bold mb-2">Share Beelyt</h3>
+          <p class="mb-3">Copy this URL to share:</p>
+          <div class="bg-gray-100 p-2 rounded mb-3 break-all">
+            ${window.location.href}
+          </div>
+          <button class="bg-green-500 text-white px-4 py-2 rounded w-full">OK</button>
+        </div>
+      `;
       
-      this.showToast('URL copied to clipboard! Share it with your friends.');
+      document.body.appendChild(modal);
+      
+      // Add click listener to close the modal
+      modal.querySelector('button').addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
     },
     // Toast notification function
-    showToast(message) {
-      // Create toast element if it doesn't exist
-      let toast = document.getElementById('toast-notification');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast-notification';
-        toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity duration-300 z-[9999] max-w-xs text-center';
-        document.body.appendChild(toast);
-      }
-      
-      // Set message and show toast
-      toast.textContent = message;
-      toast.style.opacity = '1';
-      
-      // Hide toast after 3 seconds
-      setTimeout(() => {
-        toast.style.opacity = '0';
-      }, 3000);
-    },
+    // ...existing code...
   },
   mounted() {
     // Load habits from localStorage if available
