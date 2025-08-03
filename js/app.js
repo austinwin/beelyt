@@ -355,6 +355,65 @@ const app = createApp({
         this.menuOpen = false;
       }
     },
+    shareBeelyt() {
+      // Close the menu
+      this.menuOpen = false;
+      
+      // Share data
+      const shareData = {
+        title: 'Beelyt - Habit Tracker',
+        text: 'Track your habits with Beelyt - a simple and effective habit tracker!',
+        url: window.location.href
+      };
+      
+      // Check if the Web Share API is supported
+      if (navigator.share) {
+        navigator.share(shareData)
+          .then(() => {
+            // Show success message
+            this.showToast('Shared successfully!');
+          })
+          .catch(error => {
+            console.error('Error sharing:', error);
+            this.fallbackShare();
+          });
+      } else {
+        // Fallback for browsers that don't support the Web Share API
+        this.fallbackShare();
+      }
+    },
+    // Fallback sharing method
+    fallbackShare() {
+      // Create a temporary input to copy the URL
+      const dummy = document.createElement('input');
+      document.body.appendChild(dummy);
+      dummy.value = window.location.href;
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy);
+      
+      this.showToast('URL copied to clipboard! Share it with your friends.');
+    },
+    // Toast notification function
+    showToast(message) {
+      // Create toast element if it doesn't exist
+      let toast = document.getElementById('toast-notification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity duration-300 z-[9999] max-w-xs text-center';
+        document.body.appendChild(toast);
+      }
+      
+      // Set message and show toast
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 3000);
+    },
   },
   mounted() {
     // Load habits from localStorage if available
