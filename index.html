@@ -70,13 +70,13 @@
               <span class="text-blue-500 text-lg">⬆️</span>
               Import Habits
             </button>
-            <button @click="shareBeelyt"
+            <button @click="copyBeelytLink"
               class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-blue-50 transition rounded-lg">
               <span class="text-blue-500 text-lg">🔗</span>
-              Share Beelyt
+              Copy Link
             </button>
             <button @click="supportBeelyt"
-              class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-yellow-600 hover:bg-yellow-50 transition rounded-lg">
+              class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-yellow-50 transition rounded-lg">
               <span class="flex items-center justify-center h-5 text-lg">💛</span>
               Support Beelyt
             </button>
@@ -326,16 +326,17 @@
       setTimeout(hideLoader, 5000);
     });
 
-    // Add shareBeelyt method to global window for Vue inline handler
-    window.shareBeelyt = function() {
-      if (navigator.share) {
-        navigator.share({
-          title: 'Beelyt - Habit Tracker',
-          text: 'I\'m using Beelyt, a simple offline habit tracker. No account. No distractions. Just me. Try it: https://austinwin.github.io/beelyt/',
-          url: window.location.href
+    // Add copyBeelytLink method to global window for Vue inline handler
+    window.copyBeelytLink = function() {
+      const url = window.location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('Link copied to clipboard!');
+        }, () => {
+          prompt('Copy this link:', url);
         });
       } else {
-        alert('Sharing is not supported on this device.');
+        prompt('Copy this link:', url);
       }
     }
   </script>
