@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beelyt - The Habit Tracker</title>
+  <title>Beelyt - Habit Tracker</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4CAF50">
   <link rel="icon" href="icons/icon-192x192.png">
@@ -20,12 +20,6 @@
   </div>
 
   <div id="app" class="p-4 min-h-screen bg-gray-100">
-    <!-- Share notification -->
-    <div v-if="showShareNotification"
-         class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-[9999] transition"
-         style="min-width:180px;text-align:center;">
-      Link copied!
-    </div>
     <div class="max-w-md mx-auto">
       <div class="flex items-center mb-4">
         <h1 class="text-2xl font-bold flex-1">Beelyt - The Habits</h1>
@@ -75,12 +69,6 @@
                 class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-green-50 transition rounded-lg">
               <span class="text-blue-500 text-lg">⬆️</span>
               Import Habits
-            </button>
-            <!-- Share button inserted here -->
-            <button @click="shareApp"
-                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-blue-50 transition rounded-lg">
-              <span class="text-blue-400 text-lg">🔗</span>
-              Share
             </button>
             <button @click="supportBeelyt"
               class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-yellow-600 hover:bg-yellow-50 transition rounded-lg">
@@ -332,45 +320,8 @@
       // Fallback: hide loader after 5s
       setTimeout(hideLoader, 5000);
     });
-
-    // Add shareApp logic for Vue app
-    // Wait for Vue and DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', function() {
-      // ...existing code...
-
-      // Add shareApp method to Vue app if not already present
-      if (window.Vue && window.Vue.createApp) {
-        // Patch the root app config if not already patched
-        const origCreateApp = window.Vue.createApp;
-        window.Vue.createApp = function(...args) {
-          const app = origCreateApp.apply(this, args);
-          // Add shareApp and notification state if not present
-          app.mixin({
-            data() {
-              return {
-                showShareNotification: false
-              };
-            },
-            methods: {
-              shareApp() {
-                const url = window.location.origin + window.location.pathname;
-                navigator.clipboard.writeText(url).then(() => {
-                  this.showShareNotification = true;
-                  setTimeout(() => {
-                    this.showShareNotification = false;
-                  }, 1500);
-                });
-                this.menuOpen = false;
-              }
-            }
-          });
-          return app;
-        };
-      }
-    });
   </script>
 </body>
 
 </html>
 </html>
-
