@@ -41,10 +41,10 @@
      }"
 >
   <!-- Header: name (2-line clamp), quick actions -->
-  <div class="flex items-start gap-2">
+  <div class="flex items-start gap-0.5">
     <!-- Drag handle (industry standard grip dots) -->
     <span
-      class="mr-1 flex items-center select-none"
+      class="mr-0.5 flex items-center select-none"
       :class="(draggingIdx === idx) ? 'cursor-grabbing' : 'cursor-grab'"
       title="Drag to reorder"
     >
@@ -246,4 +246,5 @@
     });
   </script>
 </body>
+
 </html>
