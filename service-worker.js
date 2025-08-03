@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-tracker-v1.9';  // Add versioning
+const CACHE_NAME = 'habit-tracker-v1.11';  // Add versioning
 // NOTE: Increment CACHE_NAME when deploying new versions to force cache update.
 //8-1-2025: release v1.1 - force to auto-update
 const FILES_TO_CACHE = [
@@ -56,6 +56,7 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
 
 
 
