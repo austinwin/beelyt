@@ -41,7 +41,7 @@
      }"
 >
   <!-- Header: name (2-line clamp), quick actions -->
-  <div class="flex items-start gap-0.5">
+  <div class="flex items-center gap-0.5">
     <!-- Drag handle (industry standard grip dots) -->
     <span
       class="mr-0.5 flex items-center select-none"
@@ -66,7 +66,22 @@
     >
       {{ habit.name }}
     </h3>
-
+    <!-- Star button: mark as important -->
+    <button
+      @click.stop="toggleImportant(habit)"
+      class="ml-2 flex items-center justify-center w-8 h-8 rounded-full hover:bg-yellow-100 transition"
+      :aria-pressed="habit.important"
+      :title="habit.important ? 'Unmark as important' : 'Mark as important'"
+      style="align-self: center;"
+    >
+      <svg v-if="habit.important" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.196-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z"/>
+      </svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M11.049 2.927c-.3-.921-1.603-.921-1.902 0l-1.286 3.967a1 1 0 01-.95.69H2.636c-.969 0-1.371 1.24-.588 1.81l3.38 2.455a1 1 0 01.364 1.118l-1.287 3.966c-.3.922.755 1.688 1.54 1.118l3.38-2.455a1 1 0 011.175 0l3.38 2.455c.784.57 1.838-.196 1.539-1.118l-1.287-3.966a1 1 0 01.364-1.118l3.38-2.455c.783-.57.38-1.81-.588-1.81h-4.175a1 1 0 01-.95-.69l-1.286-3.967z"/>
+      </svg>
+    </button>
   </div>
 
   <!-- 7-day mini calendar -->
@@ -249,4 +264,3 @@
 </body>
 
 </html>
-

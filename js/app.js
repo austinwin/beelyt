@@ -267,6 +267,10 @@ const app = createApp({
       this.dragTouchIdx = null;
       this.dragTouchStartY = null;
     },
+    toggleImportant(habit) {
+      habit.important = !habit.important;
+      this.saveHabits();
+    },
   },
   mounted() {
     // Load habits from localStorage if available

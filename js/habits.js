@@ -2,13 +2,18 @@ function createHabitStore() {
   let habits = getFromLocalStorage('habits', []);
 
   function addHabit(habit) {
-    habits.push({ id: Date.now(), ...habit, completedDates: [], messages: [] });
+    habits.push({ id: Date.now(), ...habit, important: false, completedDates: [], messages: [] });
     saveToLocalStorage('habits', habits);
   }
 
   function updateHabit(updatedHabit) {
-    habits = habits.map(h => (h.id === updatedHabit.id ? updatedHabit : h));
+    habits = habits.map(h => (h.id === updatedHabit.id ? { ...updatedHabit, important: updatedHabit.important ?? false } : h));
     saveToLocalStorage('habits', habits);
+  }
+
+  function toggleImportant(habit) {
+    habit.important = !habit.important;
+    updateHabit(habit);
   }
 
   function toggleComplete(habit, date) {
@@ -54,6 +59,7 @@ function createHabitStore() {
     addMessage,
     getMessages,
     deleteHabit,
-    renameHabit
+    renameHabit,
+    toggleImportant
   };
 }
