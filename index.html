@@ -341,24 +341,28 @@
                 text: 'A simple offline habit tracker. No account. No distractions. Just me. Try it: https://austinwin.github.io/beelyt/',
                 url: window.location.origin + window.location.pathname
               };
+              // Try Web Share API first
               if (navigator.share) {
                 try {
                   await navigator.share(shareData);
+                  return;
                 } catch (e) {
-                  // User cancelled or error
+                  // If user cancels or error, fallback below
                 }
-              } else if (navigator.clipboard) {
+              }
+              // Try clipboard API if available
+              if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
                 try {
                   await navigator.clipboard.writeText(shareData.url);
                   vm.showShareCopied = true;
                   setTimeout(() => { vm.showShareCopied = false; }, 1500);
+                  return;
                 } catch (e) {
-                  alert('Copy failed. Please copy the link manually:\n' + shareData.url);
+                  // clipboard failed, fallback to prompt
                 }
-              } else {
-                // Fallback: prompt
-                window.prompt('Copy this link:', shareData.url);
               }
+              // Always fallback to prompt (works on iOS)
+              window.prompt('Copy this link:', shareData.url);
             };
           }
         }
