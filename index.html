@@ -20,6 +20,12 @@
   </div>
 
   <div id="app" class="p-4 min-h-screen bg-gray-100">
+    <!-- Share notification -->
+    <div v-if="showShareNotification"
+         class="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-[9999] transition"
+         style="min-width:180px;text-align:center;">
+      Link copied!
+    </div>
     <div class="max-w-md mx-auto">
       <div class="flex items-center mb-4">
         <h1 class="text-2xl font-bold flex-1">Beelyt - The Habits</h1>
@@ -70,6 +76,7 @@
               <span class="text-blue-500 text-lg">⬆️</span>
               Import Habits
             </button>
+            <!-- Share button inserted here -->
             <button @click="shareApp"
                 class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-blue-50 transition rounded-lg">
               <span class="text-blue-400 text-lg">🔗</span>
@@ -326,49 +333,43 @@
       setTimeout(hideLoader, 5000);
     });
 
+    // Add shareApp logic for Vue app
     // Wait for Vue and DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
-      // Patch Vue app with shareApp if not already present
-      const checkVueApp = setInterval(() => {
-        if (window.Vue && window.app && window.app.config && window.app._instance) {
-          clearInterval(checkVueApp);
-          const vm = window.app._instance.proxy;
-          if (!vm.shareApp) {
-            vm.showShareCopied = false;
-            vm.shareApp = async function() {
-              const shareData = {
-                title: 'Beelyt - Habit Tracker',
-                text: 'A simple offline habit tracker. No account. No distractions. Just me. Try it: https://austinwin.github.io/beelyt/',
-                url: window.location.origin + window.location.pathname
+      // ...existing code...
+
+      // Add shareApp method to Vue app if not already present
+      if (window.Vue && window.Vue.createApp) {
+        // Patch the root app config if not already patched
+        const origCreateApp = window.Vue.createApp;
+        window.Vue.createApp = function(...args) {
+          const app = origCreateApp.apply(this, args);
+          // Add shareApp and notification state if not present
+          app.mixin({
+            data() {
+              return {
+                showShareNotification: false
               };
-              // Try Web Share API first
-              if (navigator.share) {
-                try {
-                  await navigator.share(shareData);
-                  return;
-                } catch (e) {
-                  // If user cancels or error, fallback below
-                }
+            },
+            methods: {
+              shareApp() {
+                const url = window.location.origin + window.location.pathname;
+                navigator.clipboard.writeText(url).then(() => {
+                  this.showShareNotification = true;
+                  setTimeout(() => {
+                    this.showShareNotification = false;
+                  }, 1500);
+                });
+                this.menuOpen = false;
               }
-              // Try clipboard API if available
-              if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                try {
-                  await navigator.clipboard.writeText(shareData.url);
-                  vm.showShareCopied = true;
-                  setTimeout(() => { vm.showShareCopied = false; }, 1500);
-                  return;
-                } catch (e) {
-                  // clipboard failed, fallback to prompt
-                }
-              }
-              // Always fallback to prompt (works on iOS)
-              window.prompt('Copy this link:', shareData.url);
-            };
-          }
-        }
-      }, 50);
+            }
+          });
+          return app;
+        };
+      }
     });
   </script>
 </body>
 
+</html>
 </html>
