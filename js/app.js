@@ -370,7 +370,8 @@ const app = createApp({
       if (navigator.share) {
         navigator.share(shareData)
           .then(() => {
-            this.showToast('Shared successfully!');
+            //this.showToast('Shared successfully!');
+            console.log('Shared successfully!', error);
           })
           .catch(error => {
             console.error('Error sharing:', error);

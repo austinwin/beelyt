@@ -345,13 +345,35 @@ body {
   pointer-events: none;
 }
 
+/* Dropdown Menu Positioning Fix */
+nav.absolute {
+  position: absolute !important; /* Override any other positioning */
+  right: 0 !important; 
+  transform-origin: top right;
+  will-change: transform, opacity; /* Performance optimization */
+  transform: translateZ(0); /* Force GPU acceleration */
+  top: 100%; /* Ensure it's positioned right below the button */
+  margin-top: 0.5rem;
+}
+
+/* Animation adjustments */
 @keyframes fade-in {
   from { opacity: 0; transform: translate(-50%, 1rem); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+@keyframes menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
+}
+
+nav.animate-fade-in {
+  animation: menu-fade-in 0.15s ease-out forwards !important;
+  opacity: 0; /* Start fully transparent */
 }
 
 /* Responsive Adjustments */
