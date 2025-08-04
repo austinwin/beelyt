@@ -368,16 +368,19 @@ const app = createApp({
       
       // Check if the Web Share API is supported
       if (navigator.share) {
-        // Fix for Error sharing: ReferenceError: error is not defined
+        // Use a flag to track if native sharing was initiated
+        let shareInitiated = true;
+        
         navigator.share(shareData)
           .then(() => {
+            // Only show success toast when sharing completes
             //this.showToast('Shared successfully!');
             console.log('Shared successfully!');
           })
-          .catch((err) => { // Changed from 'error' to 'err' to fix the reference error
+          .catch((err) => {
             console.error('Error sharing:', err);
+            // Only use fallback if it's not user cancellation
             if (err.name !== 'AbortError') {
-              // Only fall back if it's not the user canceling the share
               this.fallbackShare();
             }
           });
@@ -389,29 +392,17 @@ const app = createApp({
     
     // Fallback sharing method
     fallbackShare() {
-      // Fix for Clipboard API failing due to focus issues
-      // First try to make sure the document has focus
-      try {
-        window.focus();
-        
-        // Add a small delay to ensure focus is set
-        setTimeout(() => {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(window.location.href)
-              .then(() => {
-                this.showToast('URL copied to clipboard! Share it with your friends.');
-              })
-              .catch(err => {
-                console.error('Clipboard API failed:', err);
-                // Use execCommand as last resort
-                this.fallbackCopyUsingExecCommand();
-              });
-          } else {
+      // Try to use the Clipboard API first (better for PWAs)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => {
+            this.showToast('URL copied to clipboard! Share it with your friends.');
+          })
+          .catch(err => {
+            console.error('Clipboard API failed:', err);
             this.fallbackCopyUsingExecCommand();
-          }
-        }, 100);
-      } catch (e) {
-        // If focus fails, go directly to execCommand
+          });
+      } else {
         this.fallbackCopyUsingExecCommand();
       }
     },
