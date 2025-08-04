@@ -1,5 +1,16 @@
-# Beelyt - Habit Tracker
+# Beelyt - The Habit Tracker
 Beelyt App: https://austinwin.github.io/beelyt/  
+
+![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt)
+![Repo Size](https://img.shields.io/github/repo-size/austinwin/beelyt)
+![Code Size](https://img.shields.io/github/languages/code-size/austinwin/beelyt)
+![Top Language](https://img.shields.io/github/languages/top/austinwin/beelyt)
+![License](https://img.shields.io/github/license/austinwin/beelyt)
+![Last Commit](https://img.shields.io/github/last-commit/austinwin/beelyt)
+![GitHub release](https://img.shields.io/github/v/release/austinwin/beelyt)
+![Contributors](https://img.shields.io/github/contributors/austinwin/beelyt)
+![Stars](https://img.shields.io/github/stars/austinwin/beelyt?style=social)
+[![View Beelyt](https://img.shields.io/badge/Visit-App-green)](https://austinwin.github.io/beelyt/)
 
 [Beelyt App](https://austinwin.github.io/beelyt/)  
 **Beelyt** (short for Bee-light: habit and discipline like a bee) is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
