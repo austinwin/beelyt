@@ -178,7 +178,7 @@
   </div>
 
   <!-- Expanded panel -->
-  <div v-if="expandedHabitId === habit.id" class="mt-3 bg-gray-50 rounded-lg p-3 shadow-inner">
+  <div v-if="expandedHabitId === habit.id" class="mt-3 bg-white rounded-lg p-3 shadow-inner border border-gray-200">
     <!-- Rename + delete stay here, larger targets -->
     <div class="habit-modal-header flex items-center mb-3 relative">
       <div class="relative flex-grow">
@@ -263,15 +263,23 @@
       </div>
     </div>
 
-    <!-- Switch to show/hide Full Year Calendar -->
+    <!-- Switch to show/hide Full Year Calendar - Styled as a friendly toggle -->
     <div class="flex items-center mt-4 mb-2">
       <label class="flex items-center cursor-pointer select-none">
-        <input type="checkbox" v-model="habit._showFullYearCalendar" class="form-checkbox h-4 w-4 text-green-500">
-        <span class="ml-2 text-sm text-gray-700">Show full year calendar</span>
+        <div class="relative inline-block">
+          <input type="checkbox" v-model="habit._showFullYearCalendar" class="sr-only">
+          <div class="w-10 h-5 bg-gray-300 rounded-full shadow-inner transition-colors duration-300"
+               :class="{ 'bg-green-500': habit._showFullYearCalendar }"></div>
+          <div class="absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full shadow transform transition-transform duration-300"
+               :class="{ 'translate-x-5': habit._showFullYearCalendar }"></div>
+        </div>
+        <span class="ml-3 text-sm font-medium text-gray-700">
+          {{ habit._showFullYearCalendar ? 'Hide yearly calendar' : 'Show yearly calendar' }}
+        </span>
       </label>
     </div>
 
-    <!-- Full Year Calendar Section -->
+    <!-- Full Year Calendar Section - GitHub-style Contributions -->
     <div class="mt-6" v-if="habit._showFullYearCalendar && habitCompletionYears(habit).length > 0">
       <div class="flex gap-2 justify-start mb-3">
         <button
@@ -286,32 +294,38 @@
           {{ year }}
         </button>
       </div>
-      <div>
-        <div
-          v-for="month in monthsOfYear(selectedFullCalendarYear, habit).slice().reverse()"
-          :key="month"
-          class="mb-6"
-        >
-          <div class="font-bold text-base mb-1 mt-2">{{ monthNames[month-1] }} {{ selectedFullCalendarYear }}</div>
-          <div class="grid grid-cols-7 gap-1 text-xs text-gray-500 mb-1">
-            <div v-for="d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="d">{{ d }}</div>
+      <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm overflow-y-auto scrollbar-thin"
+           style="max-height: 400px; overflow-y: scroll;">
+        <!-- Days of week header - Enhanced sticky header -->
+        <div class="grid grid-cols-7 gap-1 sticky top-0 bg-white z-20 pb-2 pt-0.5 border-b border-gray-200 shadow-sm">
+          <div v-for="day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" 
+               :key="day" 
+               class="text-xs font-medium text-center text-gray-600 py-1">
+            {{ day }}
           </div>
-          <div class="grid grid-cols-7 gap-1">
-            <div v-for="blank in blanksForMonth(selectedFullCalendarYear, month)" :key="'blank'+blank"></div>
-            <div
-              v-for="dateObj in daysOfMonth(selectedFullCalendarYear, month)"
-              :key="dateObj.date"
-              class="w-8 h-8 flex items-center justify-center text-sm border rounded transition-colors"
-              :class="{
-                'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, dateObj.date),
-                'bg-gray-200 text-gray-600 border-gray-300': !isHabitCompleted(habit, dateObj.date),
-                'bg-gray-50 text-gray-300 cursor-not-allowed': isFutureDate(dateObj.date)
-              }"
-              :title="dateObj.date"
-            >
-              {{ dateObj.day }}
+        </div>
+        
+        <!-- Add a small spacer after the header -->
+        <div class="h-1"></div>
+        
+        <!-- Calendar grid - vertical continuous layout in reverse order -->
+        <div class="grid grid-cols-7 gap-1">
+          <template v-for="(dateObj, index) in getReversedYearCalendar(selectedFullCalendarYear)">
+            <div :key="index"
+                 class="aspect-square flex flex-col items-center justify-center rounded transition-colors border text-center"
+                 :class="{
+                   'bg-green-500 text-white border-transparent': dateObj && isHabitCompleted(habit, dateObj.date),
+                   'bg-gray-100 text-gray-600 border-gray-200': dateObj && !isHabitCompleted(habit, dateObj.date) && !isFutureDate(dateObj.date),
+                   'bg-gray-50 text-gray-300': dateObj && isFutureDate(dateObj.date),
+                   'opacity-0': !dateObj
+                 }"
+                 @click="dateObj && !isFutureDate(dateObj.date) && toggleCompleteDetail(habit, dateObj.date)">
+              <template v-if="dateObj">
+                <div class="text-sm font-semibold leading-none">{{ dateObj.day }}</div>
+                <div class="text-[9px] opacity-80 mt-0.5">{{ dateObj.monthName }}</div>
+              </template>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -388,7 +402,4 @@
   </script>
 </body>
 
-</html>
-</html>
-</html>
 </html>

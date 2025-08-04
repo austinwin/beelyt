@@ -686,6 +686,76 @@ const app = createApp({
       }
       return days;
     },
+    getYearCalendarContinuous(year) {
+      // Create a continuous array of dates for the entire year
+      const result = [];
+      const startDate = new Date(year, 0, 1);
+      
+      // Find the first Monday (or whatever is your first day of the week)
+      while (startDate.getDay() !== 1) { // 1 is Monday
+        startDate.setDate(startDate.getDate() - 1);
+      }
+      
+      // Create an array of dates from startDate through end of the year plus extra weeks
+      const endDate = new Date(year, 11, 31);
+      const currentDate = new Date(startDate);
+      
+      // Add empty slots for days before the start date
+      const dayOfWeek = startDate.getDay() || 7; // Convert Sunday (0) to 7
+      for (let i = 1; i < dayOfWeek; i++) {
+        result.push(null);
+      }
+      
+      // Add all dates until we're past the end date
+      while (currentDate <= endDate || currentDate.getDay() !== 0) {
+        const isInYear = currentDate.getFullYear() === year;
+        if (isInYear) {
+          result.push({
+            date: this.formatDateString(currentDate),
+            day: currentDate.getDate(),
+            monthName: this.monthNames[currentDate.getMonth()].substring(0, 3)
+          });
+        } else {
+          result.push(null); // Empty cell for dates outside the year
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return result;
+    },
+
+    formatDateString(date) {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
+    /**
+     * Gets year calendar data in reverse order (Dec 31 first)
+     * For current year, only shows months up to current date
+     */
+    getReversedYearCalendar(year) {
+      // Get the calendar data from the original function
+      const calendarData = this.getYearCalendarContinuous(year);
+      
+      // Check if it's the current year
+      const isCurrentYear = year === new Date().getFullYear();
+      
+      // If current year, filter out future months
+      let filteredData = calendarData;
+      if (isCurrentYear) {
+        const currentMonth = new Date().getMonth(); // 0-11
+        filteredData = calendarData.filter(dateObj => {
+          if (!dateObj) return true; // Keep empty placeholders
+          const month = new Date(dateObj.date + 'T00:00:00').getMonth();
+          return month <= currentMonth;
+        });
+      }
+      
+      // Reverse the array to show Dec 31 first
+      return filteredData.reverse();
+    },
 
     // --- End Full Year Calendar Feature Methods ---
   },
