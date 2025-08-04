@@ -15,7 +15,7 @@ It’s fast, mobile-friendly, and works offline—no accounts, no cloud, no trac
 
 I originally built Beelyt for myself, but I’m sharing it in case it helps someone else.  
 It’s not packed with features, but it’s yours—simple, private, and always ready.
-<a href="https://www.buymeacoffee.com/austinwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 20px !important;width: 60px !important;" ></a>
+<a href="https://www.buymeacoffee.com/austinwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 100px !important;" ></a>
 <!-- Image grid with responsive layout using HTML inside Markdown -->
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1d2656c8-dbb6-4773-a069-0cfd83b35b54" width="22%" />
