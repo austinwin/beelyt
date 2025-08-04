@@ -368,14 +368,15 @@ const app = createApp({
       
       // Check if the Web Share API is supported
       if (navigator.share) {
+        // Fix for Error sharing: ReferenceError: error is not defined
         navigator.share(shareData)
           .then(() => {
             //this.showToast('Shared successfully!');
-            console.log('Shared successfully!', error);
+            console.log('Shared successfully!');
           })
-          .catch(error => {
-            console.error('Error sharing:', error);
-            if (error.name !== 'AbortError') {
+          .catch((err) => { // Changed from 'error' to 'err' to fix the reference error
+            console.error('Error sharing:', err);
+            if (err.name !== 'AbortError') {
               // Only fall back if it's not the user canceling the share
               this.fallbackShare();
             }
@@ -388,18 +389,29 @@ const app = createApp({
     
     // Fallback sharing method
     fallbackShare() {
-      // Try to use the Clipboard API first (better for PWAs)
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(window.location.href)
-          .then(() => {
-            this.showToast('URL copied to clipboard! Share it with your friends.');
-          })
-          .catch(err => {
-            console.error('Clipboard API failed:', err);
-            // Use execCommand as last resort
+      // Fix for Clipboard API failing due to focus issues
+      // First try to make sure the document has focus
+      try {
+        window.focus();
+        
+        // Add a small delay to ensure focus is set
+        setTimeout(() => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(window.location.href)
+              .then(() => {
+                this.showToast('URL copied to clipboard! Share it with your friends.');
+              })
+              .catch(err => {
+                console.error('Clipboard API failed:', err);
+                // Use execCommand as last resort
+                this.fallbackCopyUsingExecCommand();
+              });
+          } else {
             this.fallbackCopyUsingExecCommand();
-          });
-      } else {
+          }
+        }, 100);
+      } catch (e) {
+        // If focus fails, go directly to execCommand
         this.fallbackCopyUsingExecCommand();
       }
     },
@@ -407,21 +419,31 @@ const app = createApp({
     // Additional fallback for older browsers
     fallbackCopyUsingExecCommand() {
       try {
+        // Create a visually hidden but focused textarea element
         const dummy = document.createElement('textarea');
         dummy.style.position = 'fixed';
+        dummy.style.top = '0';
+        dummy.style.left = '0';
+        dummy.style.width = '1px';
+        dummy.style.height = '1px';
         dummy.style.opacity = '0';
         dummy.value = window.location.href;
+        
         document.body.appendChild(dummy);
+        
+        // This helps on iOS to ensure the element is properly visible and focusable
+        dummy.style.visibility = 'visible';
         dummy.focus();
         dummy.select();
         
+        // Try to copy
         const successful = document.execCommand('copy');
         document.body.removeChild(dummy);
         
         if (successful) {
           this.showToast('URL copied to clipboard! Share it with your friends.');
         } else {
-          // We need to restore the manual share dialog since all other methods failed
+          // If execCommand fails, show the manual dialog
           this.showManualShareInstructions();
         }
       } catch (err) {
@@ -430,26 +452,56 @@ const app = createApp({
       }
     },
     
-    // Restore the manual share instructions since it's needed as a last resort
+    // Show manual share instructions (simplified version for better mobile compatibility)
     showManualShareInstructions() {
       // Create a modal with the URL and instructions
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+      
+      // Make the URL input read-only but selectable
+      const shareUrl = window.location.href;
+      
       modal.innerHTML = `
         <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
           <h3 class="text-lg font-bold mb-2">Share Beelyt</h3>
-          <p class="mb-3">Copy this URL to share:</p>
-          <div class="bg-gray-100 p-2 rounded mb-3 break-all select-all">
-            ${window.location.href}
+          <p class="mb-2">Copy this URL to share:</p>
+          <div class="relative mb-4">
+            <input type="text" readonly value="${shareUrl}" 
+                   class="bg-gray-100 p-2 pr-16 rounded w-full border border-gray-300 select-all" 
+                   onclick="this.select()">
+            <button id="copy-btn" class="absolute right-1 top-1 bg-blue-500 text-white px-2 py-1 rounded text-sm">
+              Copy
+            </button>
           </div>
-          <button class="bg-green-500 text-white px-4 py-2 rounded w-full">OK</button>
+          <button class="bg-green-500 text-white px-4 py-2 rounded w-full" id="close-modal">
+            Close
+          </button>
         </div>
       `;
       
       document.body.appendChild(modal);
       
+      // Handle copy button click
+      const copyBtn = modal.querySelector('#copy-btn');
+      copyBtn.addEventListener('click', () => {
+        const input = modal.querySelector('input');
+        input.select();
+        input.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+          document.execCommand('copy');
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.remove('bg-blue-500');
+          copyBtn.classList.add('bg-green-500');
+        } catch (err) {
+          copyBtn.textContent = 'Failed';
+          copyBtn.classList.remove('bg-blue-500');
+          copyBtn.classList.add('bg-red-500');
+        }
+      });
+      
       // Add click listener to close the modal
-      modal.querySelector('button').addEventListener('click', () => {
+      modal.querySelector('#close-modal').addEventListener('click', () => {
         document.body.removeChild(modal);
       });
     },
