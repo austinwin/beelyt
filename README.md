@@ -1,4 +1,4 @@
-# Beelyt - The Habit Tracker  <a href="https://www.buymeacoffee.com/austinwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 30px !important;width: 120px !important;" ></a>
+# Beelyt - The Habit Tracker  <a href="https://www.buymeacoffee.com/austinwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 35px !important;width: 120px !important;" ></a>
 [Beelyt App](https://austinwin.github.io/beelyt/): https://austinwin.github.io/beelyt/  
 
 ![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt?cacheBust=1)
