@@ -63,6 +63,10 @@ No installation required!
 Just open the app in your browser.  
 For offline access, add Beelyt to your home screen (PWA support).
 
+## License
+
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.  
+
 ## Sponsor
 <a href="https://www.buymeacoffee.com/austinwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
