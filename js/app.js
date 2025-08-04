@@ -29,6 +29,7 @@ const app = createApp({
       // PWA installation
       deferredPrompt: null,
       canInstall: false,
+      isRunningAsPWA: false,
     };
   },
   computed: {
@@ -72,6 +73,9 @@ const app = createApp({
       }
       return days;
     },
+    shouldShowInstallButton() {
+      return !this.isRunningAsPWA && this.canInstall;
+    }
   },
   methods: {
     addHabit() {
@@ -521,9 +525,35 @@ const app = createApp({
       }, 3000);
     },
     
+    // Check if app is running as PWA
+    checkIfRunningAsPWA() {
+      // Method 1: Check if display-mode is standalone or fullscreen
+      const isDisplayModePWA = window.matchMedia('(display-mode: standalone)').matches || 
+                              window.matchMedia('(display-mode: fullscreen)').matches ||
+                              window.matchMedia('(display-mode: minimal-ui)').matches;
+      
+      // Method 2: Check for iOS PWA
+      const isIOSPWA = window.navigator.standalone === true;
+      
+      // Method 3: Check for presence of serviceWorker in navigator
+      const hasServiceWorker = 'serviceWorker' in navigator;
+      
+      // If either condition is true, we're in PWA mode
+      this.isRunningAsPWA = isDisplayModePWA || isIOSPWA;
+      
+      console.log('Running as PWA:', this.isRunningAsPWA);
+      return this.isRunningAsPWA;
+    },
+    
     // Install PWA functionality
     installPWA() {
       this.menuOpen = false;
+      
+      // If we're already running as a PWA, no need to show installation instructions
+      if (this.isRunningAsPWA) {
+        this.showToast('Beelyt is already installed!');
+        return;
+      }
       
       if (this.deferredPrompt) {
         // Show the install prompt
@@ -610,14 +640,27 @@ const app = createApp({
       this.habits = JSON.parse(stored);
     }
     
+    // Check if running as PWA
+    this.checkIfRunningAsPWA();
+    
+    // Listen for display-mode changes
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt) => {
+      if (evt.matches) {
+        this.isRunningAsPWA = true;
+        this.canInstall = false;
+      }
+    });
+    
     // Listen for the beforeinstallprompt event to detect if the app can be installed
     window.addEventListener('beforeinstallprompt', (e) => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Save the event so it can be triggered later
       this.deferredPrompt = e;
-      // Update UI to show the install button
-      this.canInstall = true;
+      // Only show install button if not already running as PWA
+      if (!this.isRunningAsPWA) {
+        this.canInstall = true;
+      }
     });
     
     // Listen for app installed event
