@@ -1,8 +1,6 @@
 # Beelyt - The Habit Tracker
 Beelyt App: https://austinwin.github.io/beelyt/  
-
 [Beelyt App](https://austinwin.github.io/beelyt/)  
-[Beelyt App](https://austinwin.github.io/beelyt/)
 ![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt)
 ![Top Language](https://img.shields.io/github/languages/top/austinwin/beelyt)
 ![License](https://img.shields.io/github/license/austinwin/beelyt)
