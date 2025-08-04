@@ -370,18 +370,21 @@ const app = createApp({
       if (navigator.share) {
         navigator.share(shareData)
           .then(() => {
-            // Show success message
             this.showToast('Shared successfully!');
           })
           .catch(error => {
             console.error('Error sharing:', error);
-            this.fallbackShare();
+            if (error.name !== 'AbortError') {
+              // Only fall back if it's not the user canceling the share
+              this.fallbackShare();
+            }
           });
       } else {
         // Fallback for browsers that don't support the Web Share API
         this.fallbackShare();
       }
     },
+    
     // Fallback sharing method
     fallbackShare() {
       // Try to use the Clipboard API first (better for PWAs)
@@ -392,6 +395,7 @@ const app = createApp({
           })
           .catch(err => {
             console.error('Clipboard API failed:', err);
+            // Use execCommand as last resort
             this.fallbackCopyUsingExecCommand();
           });
       } else {
@@ -402,7 +406,7 @@ const app = createApp({
     // Additional fallback for older browsers
     fallbackCopyUsingExecCommand() {
       try {
-        const dummy = document.createElement('textarea'); // Use textarea instead of input
+        const dummy = document.createElement('textarea');
         dummy.style.position = 'fixed';
         dummy.style.opacity = '0';
         dummy.value = window.location.href;
@@ -416,6 +420,7 @@ const app = createApp({
         if (successful) {
           this.showToast('URL copied to clipboard! Share it with your friends.');
         } else {
+          // We need to restore the manual share dialog since all other methods failed
           this.showManualShareInstructions();
         }
       } catch (err) {
@@ -424,7 +429,7 @@ const app = createApp({
       }
     },
     
-    // Show instructions when all clipboard methods fail
+    // Restore the manual share instructions since it's needed as a last resort
     showManualShareInstructions() {
       // Create a modal with the URL and instructions
       const modal = document.createElement('div');
@@ -433,7 +438,7 @@ const app = createApp({
         <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
           <h3 class="text-lg font-bold mb-2">Share Beelyt</h3>
           <p class="mb-3">Copy this URL to share:</p>
-          <div class="bg-gray-100 p-2 rounded mb-3 break-all">
+          <div class="bg-gray-100 p-2 rounded mb-3 break-all select-all">
             ${window.location.href}
           </div>
           <button class="bg-green-500 text-white px-4 py-2 rounded w-full">OK</button>
@@ -447,8 +452,27 @@ const app = createApp({
         document.body.removeChild(modal);
       });
     },
+    
     // Toast notification function
-    // ...existing code...
+    showToast(message) {
+      // Create toast element if it doesn't exist
+      let toast = document.getElementById('toast-notification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity duration-300 z-[9999] max-w-xs text-center';
+        document.body.appendChild(toast);
+      }
+      
+      // Set message and show toast
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 3000);
+    },
   },
   mounted() {
     // Load habits from localStorage if available
