@@ -1,461 +1,332 @@
-const { createApp, ref, computed } = Vue;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beelyt - Habit Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+  <link rel="icon" href="icons/icon-192x192.png">
+  <link href="css/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90 z-[9999] transition-opacity duration-500">
+    <div class="flex flex-col items-center">
+      <div class="loader-spinner mb-4"></div>
+      <div class="text-green-600 font-semibold text-lg">Loading Beelyt...</div>
+    </div>
+  </div>
 
-const app = createApp({
-  data() {
-    return {
-      habits: [],
-      newHabit: { name: '', frequency: 'Daily', completedDates: [], messages: [] },
-      showModal: false,
-      // Detail view state
-      showHabitDetail: false,
-      selectedHabit: null,
-      selectedDate: '',
-      messageInput: '',
-      // Calendar state
-      today: new Date(),
-      calendarMonth: new Date().getMonth(),
-      calendarYear: new Date().getFullYear(),
-      // Expanded habit view state
-      expandedHabitId: null,
-      renameInput: '',
-      // Drag and drop state
-      draggingIdx: null,
-      dragOverIdx: null,
-      dragTouchTimer: null,
-      dragTouchStartY: null,
-      dragTouchIdx: null,
-      // Menu state
-      menuOpen: false,
-    };
-  },
-  computed: {
-    calendarMonthName() {
-      return new Date(this.calendarYear, this.calendarMonth).toLocaleString('default', { month: 'long' });
-    },
-    getDaysInMonth() {
-      return (year, month) => new Date(year, month + 1, 0).getDate();
-    },
-    calendarBlanks() {
-      const firstDay = new Date(this.calendarYear, this.calendarMonth, 1).getDay();
-      return (firstDay === 0 ? 6 : firstDay - 1);
-    },
-    calendarDates() {
-      const days = [];
-      const daysInMonth = this.getDaysInMonth(this.calendarYear, this.calendarMonth);
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(this.calendarYear, this.calendarMonth, d);
-        const iso = date.toISOString().split('T')[0];
-        days.push({ day: d, date: iso });
-      }
-      return days;
-    },
-    safeMessages() {
-      // Only show messages for the expanded habit, latest first
-      if (!this.expandedHabitId) return [];
-      const habit = this.habits.find(h => h.id === this.expandedHabitId);
-      return habit && habit.messages ? [...habit.messages].sort((a, b) => b.timestamp - a.timestamp) : [];
-    },
-    last7Days() {
-      const days = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        days.push(`${yyyy}-${mm}-${dd}`);
-      }
-      return days;
-    },
-  },
-  methods: {
-    addHabit() {
-      if (this.newHabit.name) {
-        this.habits.push({ ...this.newHabit, id: Date.now() });
-        this.newHabit = { name: '', frequency: 'Daily', completedDates: [], messages: [] };
-        this.showModal = false;
-        this.saveHabits();
-      }
-    },
-    toggleComplete(habit, date) {
-      const h = this.habits.find(x => x.id === habit.id);
-      if (h) {
-        const index = h.completedDates.indexOf(date);
-        if (index === -1) {
-          h.completedDates.push(date);
-        } else {
-          h.completedDates.splice(index, 1);
-        }
-        this.saveHabits();
-      }
-    },
-    isHabitCompleted(habit, date) {
-      const h = this.habits.find(x => x.id === habit.id);
-      return h ? h.completedDates.includes(date) : false;
-    },
-    openHabitDetail(habit) {
-      this.selectedHabit = { ...habit };
-      this.showHabitDetail = true;
-      this.renameInput = habit.name;
-      // Default to today
-      const todayIso = new Date(this.calendarYear, this.calendarMonth, this.today.getDate()).toISOString().split('T')[0];
-      this.selectedDate = todayIso;
-      this.messageInput = '';
-    },
-    closeHabitDetail() {
-      this.showHabitDetail = false;
-      this.selectedHabit = null;
-      this.selectedDate = '';
-      this.messageInput = '';
-    },
-    toggleCompleteDetail(habit, date) {
-      this.toggleComplete(habit, date);
-    },
-    sendMessage() {
-      if (!this.expandedHabitId) return;
-      const text = this.messageInput.trim();
-      if (!text) return;
-      const habit = this.habits.find(h => h.id === this.expandedHabitId);
-      if (!habit) return;
-      if (!habit.messages) habit.messages = [];
-      habit.messages.push({
-        text,
-        timestamp: Date.now()
+  <div id="app" class="p-4 min-h-screen bg-gray-100">
+    <div class="max-w-md mx-auto">
+      <div class="flex items-center mb-4">
+        <h1 class="text-2xl font-bold flex-1">Beelyt - The Habits</h1>
+        <!-- Hamburger Menu -->
+        <div class="relative" @keydown.esc="menuOpen = false">
+          <button @click="toggleMenu"
+                  :aria-expanded="menuOpen"
+                  aria-label="Open menu"
+                  class="focus:outline-none p-2 rounded-lg hover:bg-green-100 transition-colors"
+                  style="height: 40px; width: 40px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor"
+                 stroke-width="2.5" fill="none" stroke-linecap="round"
+                 stroke-linejoin="round" class="text-green-500 transition-transform duration-300"
+                 :class="menuOpen ? 'scale-110' : ''">
+              <!-- Top line -->
+              <line x1="4" :y1="menuOpen ? 12 : 6" x2="20" :y2="menuOpen ? 12 : 6"
+                    :class="menuOpen 
+                      ? 'transform rotate-45 origin-center'
+                      : ''"
+                    class="transition-transform duration-300"></line>
+              <!-- Middle line -->
+              <line x1="4" y1="12" x2="20" y2="12"
+                    class="transition-opacity duration-300"
+                    :class="menuOpen ? 'opacity-0' : 'opacity-100'"></line>
+              <!-- Bottom line -->
+              <line x1="4" :y1="menuOpen ? 12 : 18" x2="20" :y2="menuOpen ? 12 : 18"
+                    :class="menuOpen 
+                      ? 'transform -rotate-45 origin-center'
+                      : ''"
+                    class="transition-transform duration-300"></line>
+            </svg>
+          </button>
+          <!-- Overlay for click-outside -->
+          <div v-if="menuOpen"
+               @click="menuOpen = false"
+               class="fixed inset-0 z-40"></div>
+          <!-- Dropdown Menu -->
+          <nav v-if="menuOpen"
+               class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl z-50 border border-gray-100 py-2 animate-fade-in"
+               style="min-width:0;">
+            <button @click="exportHabits"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-green-50 transition rounded-lg">
+              <span class="text-green-500 text-lg">⬇️</span>
+              Export Habits
+            </button>
+            <button @click="triggerImport"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-gray-700 hover:bg-green-50 transition rounded-lg">
+              <span class="text-blue-500 text-lg">⬆️</span>
+              Import Habits
+            </button>
+            <button @click="shareBeelyt"
+                class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-purple-600 hover:bg-purple-50 transition rounded-lg">
+              <span class="flex items-center justify-center h-5 text-lg">🔗</span>
+              Share Beelyt
+            </button>
+            <button @click="supportBeelyt"
+              class="flex items-center gap-3 w-full text-left px-5 py-3 text-base font-medium text-yellow-600 hover:bg-yellow-50 transition rounded-lg">
+              <span class="flex items-center justify-center h-5 text-lg">💛</span>
+              Support Beelyt
+            </button>
+            <!-- Hidden file input for import -->
+            <input ref="importInput" type="file" accept="application/json"
+                   class="hidden" @change="handleImportFile" />
+          </nav>
+        </div>
+      </div>
+      <!-- ...existing code... -->
+      <div v-if="habits.length === 0" class="text-center text-gray-500 mb-6">
+        Add habit to track
+      </div>
+<div v-for="(habit, idx) in habits" :key="habit.id"
+     class="bg-white p-3 rounded-xl shadow-md mb-3"
+     draggable="true"
+     @dragstart="onDragStart(idx, $event)"
+     @dragover.prevent="onDragOver(idx, $event)"
+     @drop="onDrop(idx, $event)"
+     @dragend="onDragEnd"
+     @touchstart="onTouchStart(idx, $event)"
+     @touchmove="onTouchMove($event)"
+     @touchend="onTouchEnd"
+     :class="{
+       'opacity-50': draggingIdx === idx,
+       'ring-2 ring-blue-400': dragOverIdx === idx && draggingIdx !== null
+     }"
+>
+  <!-- Header: name (2-line clamp), quick actions -->
+  <div class="flex items-center gap-0.5">
+    <!-- Drag handle (industry standard grip dots) -->
+    <span
+      class="mr-0.5 flex items-center select-none"
+      :class="(draggingIdx === idx) ? 'cursor-grabbing' : 'cursor-grab'"
+      title="Drag to reorder"
+      @click="toggleExpandHabit(habit)"
+    >
+      <!-- SVG grip dots icon -->
+      <svg width="20" height="20" fill="none" viewBox="0 0 20 20" class="text-gray-400">
+        <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+        <circle cx="6" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="6" cy="14" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="6" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="14" cy="14" r="1.5" fill="currentColor"/>
+      </svg>
+    </span>
+    <h3
+      class="flex-1 text-base font-semibold leading-tight cursor-pointer text-blue-600 hover:underline break-words line-clamp-2"
+      @click="toggleExpandHabit(habit)"
+      :title="habit.name"
+    >
+      {{ habit.name }}
+    </h3>
+    <!-- Star button: mark as important -->
+    <button
+      @click.stop="toggleImportant(habit)"
+      class="ml-2 flex items-center justify-center w-8 h-8 rounded-full hover:bg-yellow-100 transition"
+      :aria-pressed="habit.important"
+      :title="habit.important ? 'Unmark as important' : 'Mark as important'"
+      style="align-self: center;"
+    >
+      <svg v-if="habit.important" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.196-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z"/>
+      </svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M11.049 2.927c-.3-.921-1.603-.921-1.902 0l-1.286 3.967a1 1 0 01-.95.69H2.636c-.969 0-1.371 1.24-.588 1.81l3.38 2.455a1 1 0 01.364 1.118l-1.287 3.966c-.3.922.755 1.688 1.54 1.118l3.38-2.455a1 1 0 011.175 0l3.38 2.455c.784.57 1.838-.196 1.539-1.118l-1.287-3.966a1 1 0 01.364-1.118l3.38-2.455c.783-.57.38-1.81-.588-1.81h-4.175a1 1 0 01-.95-.69l-1.286-3.967z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 7-day mini calendar -->
+  <!-- Remove the old weekday header row -->
+
+  <!-- Pills row: horizontally scrollable on XS with snap; fixed cell size -->
+  <div class="grid grid-cols-7 gap-1 mt-2 mb-1 w-full" aria-label="Past 7 days">
+    <div v-for="day in last7Days" :key="day"
+         class="flex flex-col items-center justify-center cursor-pointer transition rounded-lg border aspect-[0.85/1] min-w-0"
+         :class="{
+           'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, day),
+           'bg-gray-200 text-gray-700 border-gray-300': !isHabitCompleted(habit, day)
+         }"
+         @click="toggleComplete(habit, day)">
+      <span class="text-lg font-bold leading-tight mb-0.5" style="margin-top:2px;">
+        {{ new Date(day + 'T00:00:00').getDate() }}
+      </span>
+      <span class="text-[10px] font-medium opacity-80 -mt-0.5">
+        {{ new Date(day + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' }) }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Expanded panel -->
+  <div v-if="expandedHabitId === habit.id" class="mt-3 bg-gray-50 rounded-lg p-3 shadow-inner">
+    <!-- Rename + delete stay here, larger targets -->
+    <div class="habit-modal-header flex items-center mb-3 relative">
+      <div class="relative flex-grow">
+      <!-- Pencil icon badge (absolute, top-0 left-0 of input) -->
+      <span class="absolute left-0 top-0 text-gray-400 pointer-events-none" style="z-index:2;">
+        <!-- Improved pencil icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16.862 3.487a2.25 2.25 0 013.182 3.182l-11.25 11.25a2 2 0 01-.878.513l-4 1a1 1 0 01-1.213-1.213l1-4a2 2 0 01.513-.878l11.25-11.25z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 6l3 3" />
+        </svg>
+      </span>
+      <input v-model="renameInput"
+             @blur="confirmRename"
+             @keyup.enter="confirmRename"
+             class="text-xl font-bold border-none bg-transparent focus:outline-none focus:bg-gray-100 py-1 rounded w-full transition"
+             style="flex:1;min-width:0; padding-left:0;"
+      />
+      </div>
+      <button @click="deleteHabit"
+              class="ml-2 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-600">
+        <!-- same trash icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 7h12M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-7 0v10a2 2 0 002 2h4a2 2 0 002-2V7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Full calendar (unchanged except styling tweaks) -->
+    <div>
+      <div class="flex justify-between items-center mb-2">
+        <button @click="prevMonth" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-lg">&lt;</button>
+        <span class="font-semibold text-base">{{ calendarMonthName }} {{ calendarYear }}</span>
+        <button @click="nextMonth" class="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-lg">&gt;</button>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1 mb-2 text-xs text-gray-500">
+        <div v-for="day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="day" class="py-1">
+          {{ day }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-7 gap-1">
+        <div v-for="blank in calendarBlanks" :key="'blank'+blank"></div>
+        <div v-for="dateObj in calendarDates" :key="dateObj.date"
+             class="w-10 h-10 flex items-center justify-center text-sm border rounded transition-colors"
+             :class="{
+               'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, dateObj.date) && !isFutureDate(dateObj.date),
+               'bg-gray-200 text-gray-600 border-gray-300': !isHabitCompleted(habit, dateObj.date) && !isFutureDate(dateObj.date),
+               'ring-2 ring-blue-600': dateObj.date === selectedDate && !isFutureDate(dateObj.date),
+               'bg-gray-50 text-gray-300 cursor-not-allowed': isFutureDate(dateObj.date)
+             }"
+             @click="!isFutureDate(dateObj.date) && toggleCompleteDetail(habit, dateObj.date)">
+          {{ dateObj.day }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="mt-4">
+      <div class="relative mb-2">
+        <input v-model="messageInput"
+               @keyup.enter="sendMessage"
+               placeholder="enter log"
+               class="border p-2 w-full rounded pr-10" />
+        <button @click="sendMessage"
+                class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-50 hover:bg-blue-100 rounded-full p-1 flex items-center justify-center transition-colors"
+                style="height:2rem;width:2rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+        </button>
+      </div>
+      <div class="bg-gray-100 rounded max-h-48 overflow-y-auto">
+        <div v-if="safeMessages.length === 0" class="text-gray-400 p-2">No logs yet.</div>
+        <div v-for="msg in safeMessages" :key="msg.timestamp" class="p-2 border-b last:border-b-0">
+          <div class="text-xs text-gray-500 mb-1">{{ formatTimestamp(msg.timestamp) }}</div>
+          <div>{{ msg.text }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      <!-- Add Habit Modal -->
+      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
+          <h3 class="text-lg font-bold mb-2">Add Habit</h3>
+          <input v-model="newHabit.name" placeholder="Habit name" class="border p-2 w-full rounded mb-2"
+             @keyup.enter="addHabit">
+          <input v-model="newHabit.frequency" placeholder="Frequency: e.g, Daily" class="border p-2 w-full rounded mb-2"
+             @keyup.enter="addHabit">
+          <button @click="addHabit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Save</button>
+          <button @click="showModal = false" class="mt-2 text-gray-500 w-full">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+    <!-- Floating Add Button: always fixed to viewport bottom right -->
+    <button
+      @click="showModal = true"
+      class="floating-add-button fixed right-4 bottom-4 bg-green-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg z-50"
+      style="transition: bottom 0.2s;"
+    >
+      <span class="text-2xl">+</span>
+    </button>
+  </div>
+
+  <script src="js/vue.global.prod.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/habits.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Auto-refresh the app to get the new version
+              window.location.reload();
+            }
+          };
+        };
       });
-      this.messageInput = '';
-      this.saveHabits();
-    },
-    getMessages(habit) {
-      return habit && habit.messages ? habit.messages : [];
-    },
-    formatTimestamp(ts) {
-      const d = new Date(ts);
-      return d.toLocaleString();
-    },
-    prevMonth() {
-      if (this.calendarMonth === 0) {
-        this.calendarMonth = 11;
-        this.calendarYear -= 1;
-      } else {
-        this.calendarMonth -= 1;
-      }
-    },
-    nextMonth() {
-      if (this.calendarMonth === 11) {
-        this.calendarMonth = 0;
-        this.calendarYear += 1;
-      } else {
-        this.calendarMonth += 1;
-      }
-    },
-    confirmRename() {
-      const newName = this.renameInput.trim();
-      // Use expandedHabitId if present, otherwise selectedHabit (for modal)
-      let habit = null;
-      if (this.expandedHabitId) {
-        habit = this.habits.find(h => h.id === this.expandedHabitId);
-      } else if (this.selectedHabit) {
-        habit = this.habits.find(h => h.id === this.selectedHabit.id);
-      }
-      if (!habit) return;
-      if (newName && habit.name !== newName) {
-        habit.name = newName;
-        this.saveHabits();
-      }
-    },
-    deleteHabit() {
-      let habitId = null;
-      if (this.expandedHabitId) {
-        habitId = this.expandedHabitId;
-      } else if (this.selectedHabit) {
-        habitId = this.selectedHabit.id;
-      }
-      if (!habitId) return;
-      if (confirm('Are you sure you want to delete this habit?')) {
-        this.habits = this.habits.filter(h => h.id !== habitId);
-        this.closeExpandHabit();
-        this.closeHabitDetail();
-        this.saveHabits();
-      }
-    },
-    toggleExpandHabit(habit) {
-      if (this.expandedHabitId === habit.id) {
-        this.expandedHabitId = null;
-      } else {
-        this.expandedHabitId = habit.id;
-        this.renameInput = habit.name;
-        this.messageInput = '';
-      }
-    },
-    closeExpandHabit() {
-      this.expandedHabitId = null;
-      this.messageInput = '';
-    },
-    saveHabits() {
-      // Save habits to localStorage or your persistence layer
-      localStorage.setItem('habits', JSON.stringify(this.habits));
-    },
-    isFutureDate(date) {
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const d = new Date(date + 'T00:00:00');
-      return d > today;
-    },
-    onDragStart(idx, e) {
-      this.draggingIdx = idx;
-      e.dataTransfer.effectAllowed = 'move';
-      // For Firefox compatibility
-      e.dataTransfer.setData('text/plain', idx);
-    },
-    onDragOver(idx, e) {
-      if (this.draggingIdx !== null && idx !== this.draggingIdx) {
-        this.dragOverIdx = idx;
-      }
-    },
-    onDrop(idx, e) {
-      if (this.draggingIdx !== null && idx !== this.draggingIdx) {
-        const moved = this.habits.splice(this.draggingIdx, 1)[0];
-        this.habits.splice(idx, 0, moved);
-        this.saveHabits();
-      }
-      this.draggingIdx = null;
-      this.dragOverIdx = null;
-    },
-    onDragEnd() {
-      this.draggingIdx = null;
-      this.dragOverIdx = null;
-    },
-    // Touch support for mobile (long press to start drag)
-    onTouchStart(idx, e) {
-      this.dragTouchIdx = idx;
-      this.dragTouchStartY = e.touches[0].clientY;
-      this.dragTouchTimer = setTimeout(() => {
-        this.draggingIdx = idx;
-      }, 300); // 300ms long press
-    },
-    onTouchMove(e) {
-      if (this.draggingIdx !== null) {
-        const y = e.touches[0].clientY;
-        // Find the closest habit index to the current Y
-        const habitEls = Array.from(document.querySelectorAll('[draggable="true"]'));
-        let closestIdx = null;
-        let minDist = Infinity;
-        habitEls.forEach((el, i) => {
-          const rect = el.getBoundingClientRect();
-          const dist = Math.abs(rect.top + rect.height / 2 - y);
-          if (dist < minDist) {
-            minDist = dist;
-            closestIdx = i;
-          }
-        });
-        if (closestIdx !== null && closestIdx !== this.draggingIdx) {
-          this.dragOverIdx = closestIdx;
-        }
-      } else {
-        clearTimeout(this.dragTouchTimer);
-      }
-    },
-    onTouchEnd(e) {
-      clearTimeout(this.dragTouchTimer);
-      if (this.draggingIdx !== null && this.dragOverIdx !== null && this.draggingIdx !== this.dragOverIdx) {
-        const moved = this.habits.splice(this.draggingIdx, 1)[0];
-        this.habits.splice(this.dragOverIdx, 0, moved);
-        this.saveHabits();
-      }
-      this.draggingIdx = null;
-      this.dragOverIdx = null;
-      this.dragTouchIdx = null;
-      this.dragTouchStartY = null;
-    },
-    toggleImportant(habit) {
-      habit.important = !habit.important;
-      this.saveHabits();
-    },
-    exportHabits() {
-      this.menuOpen = false;
-      const data = JSON.stringify(this.habits, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'beelyt-habits.json';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-    },
-    triggerImport() {
-      this.menuOpen = false;
-      this.$refs.importInput.value = '';
-      this.$refs.importInput.click();
-    },
-    handleImportFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const imported = JSON.parse(evt.target.result);
-          if (Array.isArray(imported)) {
-            // Optionally: merge or replace
-            imported.forEach(h => {
-              if (!this.habits.some(existing => existing.id === h.id)) {
-                this.habits.push(h);
-              }
-            });
-            this.saveHabits();
-            alert('Habits imported!');
-          } else {
-            alert('Invalid file format.');
-          }
-        } catch {
-          alert('Failed to import.');
-        }
-      };
-      reader.readAsText(file);
-    },
-    shareHabits() {
-      this.menuOpen = false;
-      const data = JSON.stringify(this.habits, null, 2);
-      if (navigator.share) {
-        const blob = new Blob([data], { type: 'application/json' });
-        const file = new File([blob], 'beelyt-habits.json', { type: 'application/json' });
-        navigator.share({
-          title: 'Beelyt Habits',
-          text: 'Here are my Beelyt habits!',
-          files: [file]
-        }).catch(() => {});
-      } else {
-        // Fallback: copy to clipboard
-        navigator.clipboard.writeText(data).then(() => {
-          alert('Habits JSON copied to clipboard!');
-        });
-      }
-    },
-    supportBeelyt() {
-      this.menuOpen = false;
-      window.open('https://buymeacoffee.com/austinwin', '_blank');
-    },
-    toggleMenu(e) {
-      this.menuOpen = !this.menuOpen;
-    },
-    handleClickOutside(e) {
-      // Only close if menu is open and click is outside the menu/hamburger
-      if (!this.menuOpen) return;
-      const menu = document.querySelector('nav[aria-label="Menu"], nav[role="menu"], nav[aria-expanded]');
-      const btn = document.querySelector('button[aria-label="Open menu"]');
-      if (
-        this.menuOpen &&
-        !e.target.closest('.relative') // .relative wraps both button and menu
-      ) {
-        this.menuOpen = false;
-      }
-    },
-    shareBeelyt() {
-      // Close the menu
-      this.menuOpen = false;
-      
-      // Share data
-      const shareData = {
-        title: 'Beelyt - Habit Tracker',
-        text: 'Track your habits with Beelyt - a simple and effective habit tracker!',
-        url: window.location.href
-      };
-      
-      // Check if the Web Share API is supported
-      if (navigator.share) {
-        navigator.share(shareData)
-          .then(() => {
-            // Show success message
-            this.showToast('Shared successfully!');
-          })
-          .catch(error => {
-            console.error('Error sharing:', error);
-            this.fallbackShare();
-          });
-      } else {
-        // Fallback for browsers that don't support the Web Share API
-        this.fallbackShare();
-      }
-    },
-    // Fallback sharing method
-    fallbackShare() {
-      // Try to use the Clipboard API first (better for PWAs)
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(window.location.href)
-          .then(() => {
-            this.showToast('URL copied to clipboard! Share it with your friends.');
-          })
-          .catch(err => {
-            console.error('Clipboard API failed:', err);
-            // Use execCommand as last resort
-            this.fallbackCopyUsingExecCommand();
-          });
-      } else {
-        this.fallbackCopyUsingExecCommand();
-      }
-    },
-    
-    // Additional fallback for older browsers
-    fallbackCopyUsingExecCommand() {
-      try {
-        const dummy = document.createElement('textarea');
-        dummy.style.position = 'fixed';
-        dummy.style.opacity = '0';
-        dummy.value = window.location.href;
-        document.body.appendChild(dummy);
-        dummy.focus();
-        dummy.select();
-        
-        const successful = document.execCommand('copy');
-        document.body.removeChild(dummy);
-        
-        if (successful) {
-          this.showToast('URL copied to clipboard! Share it with your friends.');
-        } else {
-          // Simply show a toast message instead of a dialog
-          this.showToast('Unable to copy URL automatically');
-        }
-      } catch (err) {
-        console.error('execCommand error:', err);
-        this.showToast('Unable to share URL');
-      }
-    },
-    
-    // Toast notification function
-    showToast(message) {
-      // Create toast element if it doesn't exist
-      let toast = document.getElementById('toast-notification');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast-notification';
-        toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg opacity-0 transition-opacity duration-300 z-[9999] max-w-xs text-center';
-        document.body.appendChild(toast);
-      }
-      
-      // Set message and show toast
-      toast.textContent = message;
-      toast.style.opacity = '1';
-      
-      // Hide toast after 3 seconds
-      setTimeout(() => {
-        toast.style.opacity = '0';
-      }, 3000);
-    },
-  },
-  mounted() {
-    // Load habits from localStorage if available
-    const stored = localStorage.getItem('habits');
-    if (stored) {
-      this.habits = JSON.parse(stored);
     }
-    document.addEventListener('click', this.handleClickOutside, true);
-  },
-  beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside, true);
-  }
-}).mount('#app');
+
+    // Hide loader when Vue app is mounted and scripts are loaded
+    function hideLoader() {
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+      }
+    }
+
+    // Wait for Vue and DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for Vue app to mount
+      const checkVueMounted = setInterval(() => {
+        // Vue 3 global app is mounted when #app has child nodes
+        const appDiv = document.getElementById('app');
+        if (appDiv && appDiv.childNodes.length > 0) {
+          hideLoader();
+          clearInterval(checkVueMounted);
+        }
+      }, 50);
+      // Fallback: hide loader after 5s
+      setTimeout(hideLoader, 5000);
+    });
+  </script>
+</body>
+
+</html>
+</html>
