@@ -3,7 +3,6 @@
 
 ![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt)
 ![Top Language](https://img.shields.io/github/languages/top/austinwin/beelyt)
-![License](https://img.shields.io/github/license/austinwin/beelyt)
 ![Last Commit](https://img.shields.io/github/last-commit/austinwin/beelyt)
 ![Contributors](https://img.shields.io/github/contributors/austinwin/beelyt)
 ![Stars](https://img.shields.io/github/stars/austinwin/beelyt?style=social)
