@@ -262,6 +262,59 @@
         </div>
       </div>
     </div>
+
+    <!-- Switch to show/hide Full Year Calendar -->
+    <div class="flex items-center mt-4 mb-2">
+      <label class="flex items-center cursor-pointer select-none">
+        <input type="checkbox" v-model="habit._showFullYearCalendar" class="form-checkbox h-4 w-4 text-green-500">
+        <span class="ml-2 text-sm text-gray-700">Show full year calendar</span>
+      </label>
+    </div>
+
+    <!-- Full Year Calendar Section -->
+    <div class="mt-6" v-if="habit._showFullYearCalendar && habitCompletionYears(habit).length > 0">
+      <div class="flex gap-2 justify-start mb-3">
+        <button
+          v-for="year in habitCompletionYears(habit)"
+          :key="year"
+          @click="selectFullCalendarYear(year)"
+          class="px-3 py-1 rounded-lg font-semibold border transition"
+          :class="selectedFullCalendarYear === year
+            ? 'bg-green-500 text-white border-green-600'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'"
+        >
+          {{ year }}
+        </button>
+      </div>
+      <div>
+        <div
+          v-for="month in monthsOfYear(selectedFullCalendarYear, habit).slice().reverse()"
+          :key="month"
+          class="mb-6"
+        >
+          <div class="font-bold text-base mb-1 mt-2">{{ monthNames[month-1] }} {{ selectedFullCalendarYear }}</div>
+          <div class="grid grid-cols-7 gap-1 text-xs text-gray-500 mb-1">
+            <div v-for="d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="d">{{ d }}</div>
+          </div>
+          <div class="grid grid-cols-7 gap-1">
+            <div v-for="blank in blanksForMonth(selectedFullCalendarYear, month)" :key="'blank'+blank"></div>
+            <div
+              v-for="dateObj in daysOfMonth(selectedFullCalendarYear, month)"
+              :key="dateObj.date"
+              class="w-8 h-8 flex items-center justify-center text-sm border rounded transition-colors"
+              :class="{
+                'bg-green-500 text-white font-bold border-transparent': isHabitCompleted(habit, dateObj.date),
+                'bg-gray-200 text-gray-600 border-gray-300': !isHabitCompleted(habit, dateObj.date),
+                'bg-gray-50 text-gray-300 cursor-not-allowed': isFutureDate(dateObj.date)
+              }"
+              :title="dateObj.date"
+            >
+              {{ dateObj.day }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -335,5 +388,7 @@
   </script>
 </body>
 
+</html>
+</html>
 </html>
 </html>

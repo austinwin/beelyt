@@ -30,6 +30,12 @@ const app = createApp({
       deferredPrompt: null,
       canInstall: false,
       isRunningAsPWA: false,
+      // Full Year Calendar feature
+      selectedFullCalendarYear: null,
+      monthNames: [
+        'January','February','March','April','May','June',
+        'July','August','September','October','November','December'
+      ],
     };
   },
   computed: {
@@ -194,6 +200,14 @@ const app = createApp({
         this.expandedHabitId = habit.id;
         this.renameInput = habit.name;
         this.messageInput = '';
+        // Set default year for full calendar
+        const years = this.habitCompletionYears(habit);
+        if (years.length) this.selectedFullCalendarYear = years[years.length - 1];
+        else this.selectedFullCalendarYear = new Date().getFullYear();
+        // Ensure the toggle property exists and is false by default
+        if (typeof habit._showFullYearCalendar !== 'boolean') {
+          this.$set ? this.$set(habit, '_showFullYearCalendar', false) : (habit._showFullYearCalendar = false);
+        }
       }
     },
     closeExpandHabit() {
@@ -632,6 +646,60 @@ const app = createApp({
         document.body.removeChild(modal);
       });
     },
+
+    // --- Full Year Calendar Feature Methods ---
+
+    habitCompletionYears(habit) {
+      // Get all years from completedDates
+      if (!habit || !habit.completedDates || habit.completedDates.length === 0) return [];
+      const years = habit.completedDates.map(date => new Date(date).getFullYear());
+      const minYear = Math.min(...years);
+      const maxYear = Math.max(...years, new Date().getFullYear());
+      const arr = [];
+      for (let y = minYear; y <= maxYear; y++) arr.push(y);
+      return arr;
+    },
+    selectFullCalendarYear(year) {
+      this.selectedFullCalendarYear = year;
+    },
+    monthsOfYear(year, habit) {
+      const now = new Date();
+      if (year === now.getFullYear()) {
+        return Array.from({length: now.getMonth() + 1}, (_, i) => i + 1);
+      }
+      return Array.from({length: 12}, (_, i) => i + 1);
+    },
+    blanksForMonth(year, month) {
+      // 0=Sun, 1=Mon...
+      const first = new Date(year, month - 1, 1);
+      let day = first.getDay();
+      day = day === 0 ? 7 : day; // Make Sunday=7
+      return Array(day - 1).fill(0);
+    },
+    daysOfMonth(year, month) {
+      const days = [];
+      const last = new Date(year, month, 0).getDate();
+      for (let d = 1; d <= last; d++) {
+        const date = new Date(year, month - 1, d);
+        const iso = date.toISOString().slice(0, 10);
+        days.push({ day: d, date: iso });
+      }
+      return days;
+    },
+
+    // --- End Full Year Calendar Feature Methods ---
+  },
+  watch: {
+    expandedHabitId(newVal) {
+      // When opening a habit, set default year to latest
+      if (newVal) {
+        const habit = this.habits.find(h => h.id === newVal);
+        const years = this.habitCompletionYears(habit);
+        if (years.length) this.selectedFullCalendarYear = years[years.length - 1];
+        else this.selectedFullCalendarYear = new Date().getFullYear();
+      }
+    },
+    // ...existing code...
   },
   mounted() {
     // Load habits from localStorage if available
