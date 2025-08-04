@@ -1,11 +1,11 @@
 # Beelyt - The Habit Tracker  
 [Beelyt App](https://austinwin.github.io/beelyt/): https://austinwin.github.io/beelyt/  
 
-![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt)
-![Top Language](https://img.shields.io/github/languages/top/austinwin/beelyt)
-![Last Commit](https://img.shields.io/github/last-commit/austinwin/beelyt)
-![Contributors](https://img.shields.io/github/contributors/austinwin/beelyt)
-![Stars](https://img.shields.io/github/stars/austinwin/beelyt?style=social)
+![Latest Release](https://img.shields.io/github/v/release/austinwin/beelyt?cacheBust=1)
+![Top Language](https://img.shields.io/github/languages/top/austinwin/beelyt?cacheBust=1)
+![Last Commit](https://img.shields.io/github/last-commit/austinwin/beelyt?cacheBust=1)
+![Contributors](https://img.shields.io/github/contributors/austinwin/beelyt?cacheBust=1)
+![Stars](https://img.shields.io/github/stars/austinwin/beelyt?style=social?cacheBust=1)
 [![View Beelyt](https://img.shields.io/badge/Visit-App-green)](https://austinwin.github.io/beelyt/)
 ![License](https://img.shields.io/github/license/austinwin/beelyt?cacheBust=1)  
 
