@@ -254,7 +254,7 @@
                 </svg>
         </button>
       </div>
-      <div class="bg-gray-100 rounded max-h-48 overflow-y-auto log-scrollbar">
+      <div class="bg-gray-100 rounded max-h-48 overflow-y-auto">
         <div v-if="safeMessages.length === 0" class="text-gray-400 p-2">No logs yet.</div>
         <div v-for="msg in safeMessages" :key="msg.timestamp" class="p-2 border-b last:border-b-0">
           <div class="text-xs text-gray-500 mb-1">{{ formatTimestamp(msg.timestamp) }}</div>
@@ -333,28 +333,7 @@
       setTimeout(hideLoader, 5000);
     });
   </script>
-  <style>
-    /* Custom scrollbar for log section */
-    .log-scrollbar {
-      scrollbar-width: thin;
-      scrollbar-color: #4CAF50 #e5e7eb; /* green thumb, gray-100 track */
-    }
-    .log-scrollbar::-webkit-scrollbar {
-      width: 8px;
-      background: #e5e7eb; /* gray-100 */
-      border-radius: 8px;
-    }
-    .log-scrollbar::-webkit-scrollbar-thumb {
-      background: #4CAF50; /* green-500 */
-      border-radius: 8px;
-    }
-    .log-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #388e3c; /* darker green */
-    }
-    .log-scrollbar::-webkit-scrollbar-corner {
-      background: #e5e7eb;
-    }
-  </style>
 </body>
 
+</html>
 </html>
