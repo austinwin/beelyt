@@ -7,7 +7,7 @@
 ![Contributors](https://img.shields.io/github/contributors/austinwin/beelyt)
 ![Stars](https://img.shields.io/github/stars/austinwin/beelyt?style=social)
 [![View Beelyt](https://img.shields.io/badge/Visit-App-green)](https://austinwin.github.io/beelyt/)
-![License](https://img.shields.io/github/license/austinwin/beelyt)  
+![License](https://img.shields.io/github/license/austinwin/beelyt?cacheBust=1)  
 
 
 **Beelyt** (short for Bee-light: habit and discipline like a bee) is a lightweight, privacy-first habit tracker for anyone looking to build better routines.  
