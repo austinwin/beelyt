@@ -26,6 +26,9 @@ const app = createApp({
       dragTouchIdx: null,
       // Menu state
       menuOpen: false,
+      // PWA installation
+      deferredPrompt: null,
+      canInstall: false,
     };
   },
   computed: {
@@ -517,6 +520,88 @@ const app = createApp({
         toast.style.opacity = '0';
       }, 3000);
     },
+    
+    // Install PWA functionality
+    installPWA() {
+      this.menuOpen = false;
+      
+      if (this.deferredPrompt) {
+        // Show the install prompt
+        this.deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        this.deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            this.showToast('Thank you for installing Beelyt!');
+            this.canInstall = false;
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          // Clear the saved prompt as it can't be used again
+          this.deferredPrompt = null;
+        });
+      } else {
+        // If running as installed PWA or can't install
+        this.showInstallInstructions();
+      }
+    },
+    
+    showInstallInstructions() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      const isChrome = /Chrome/.test(navigator.userAgent);
+      const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+      
+      let instructions = '';
+      
+      if (isIOS && isSafari) {
+        instructions = `
+          <ol class="list-decimal pl-5 mb-4 space-y-2 text-sm">
+            <li>Tap the share button <span class="inline-block px-2 py-1 bg-gray-200 rounded">⎙</span> at the bottom of your screen</li>
+            <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+            <li>Tap <strong>Add</strong> in the top right corner</li>
+          </ol>
+        `;
+      } else if (isAndroid && isChrome) {
+        instructions = `
+          <ol class="list-decimal pl-5 mb-4 space-y-2 text-sm">
+            <li>Tap the menu button <span class="inline-block px-2 py-1 bg-gray-200 rounded">⋮</span> in the top right</li>
+            <li>Tap <strong>Add to Home screen</strong></li>
+            <li>Follow the prompts to install</li>
+          </ol>
+        `;
+      } else {
+        instructions = `
+          <p class="mb-4 text-sm">To install this app:</p>
+          <ol class="list-decimal pl-5 mb-4 space-y-2 text-sm">
+            <li>Open this site in Chrome or Safari on your mobile device</li>
+            <li>Access the browser's menu</li>
+            <li>Select the option to add to home screen or install</li>
+          </ol>
+        `;
+      }
+      
+      // Create the modal with installation instructions
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+      
+      modal.innerHTML = `
+        <div class="bg-white p-4 rounded-lg w-11/12 max-w-md">
+          <h3 class="text-lg font-bold mb-2">Install Beelyt</h3>
+          ${instructions}
+          <button class="bg-green-500 text-white px-4 py-2 rounded w-full" id="close-modal">
+            Got it
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Add click listener to close the modal
+      modal.querySelector('#close-modal').addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+    },
   },
   mounted() {
     // Load habits from localStorage if available
@@ -524,6 +609,23 @@ const app = createApp({
     if (stored) {
       this.habits = JSON.parse(stored);
     }
+    
+    // Listen for the beforeinstallprompt event to detect if the app can be installed
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Save the event so it can be triggered later
+      this.deferredPrompt = e;
+      // Update UI to show the install button
+      this.canInstall = true;
+    });
+    
+    // Listen for app installed event
+    window.addEventListener('appinstalled', (evt) => {
+      this.canInstall = false;
+      this.showToast('Beelyt installed successfully!');
+    });
+    
     document.addEventListener('click', this.handleClickOutside, true);
   },
   beforeUnmount() {
