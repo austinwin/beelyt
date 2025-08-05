@@ -776,6 +776,10 @@ const app = createApp({
     const stored = localStorage.getItem('habits');
     if (stored) {
       this.habits = JSON.parse(stored);
+      // Ensure all habits have _showFullYearCalendar set to false at launch
+      this.habits.forEach(h => {
+        h._showFullYearCalendar = false;
+      });
     }
     
     // Check if running as PWA
